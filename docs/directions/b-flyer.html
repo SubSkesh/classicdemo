@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Direzione B · Il flyer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500..900&family=Hanken+Grotesk:wght@400..700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --night:#0A0A0A; --bone:#F2F0EB; --ash:#9A978F; --line:#262522;
+    --acid:#CFFF3A;               /* acido, unico accento */
+    --display:"Big Shoulders Display",sans-serif; --text:"Hanken Grotesk",sans-serif;
+    --gutter:clamp(16px,3vw,40px);
+  }
+  *{box-sizing:border-box;margin:0}
+  html{background:var(--night);color:var(--bone)}
+  body{font-family:var(--text);font-size:clamp(15px,1.05vw,17px);line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  .grain{position:fixed;inset:0;pointer-events:none;z-index:50;opacity:.07;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+  header{display:flex;align-items:center;justify-content:space-between;padding:18px var(--gutter);border-bottom:1px solid var(--line)}
+  header svg{width:40px}
+  nav{display:flex;gap:clamp(14px,3vw,36px);font-weight:500}
+  nav a{color:var(--bone);text-decoration:none}
+  nav a.on{color:var(--acid)}
+
+  /* HERO: il flyer */
+  .hero{position:relative;min-height:calc(100svh - 77px);display:flex;flex-direction:column;justify-content:space-between;overflow:hidden}
+  .rows{padding-top:clamp(12px,2vw,24px)}
+  .row{font-family:var(--display);font-weight:900;text-transform:uppercase;line-height:.78;letter-spacing:-.015em;white-space:nowrap;margin-left:calc(var(--gutter) * -0.25)}
+  .r1{font-size:clamp(84px,22.2vw,340px);
+      background:linear-gradient(rgba(255,255,255,.2),rgba(255,255,255,.2)), url(../../public/assets/classic/photo-crowd-1920.webp) center 40%/cover, var(--acid);
+      background-blend-mode:screen,luminosity;-webkit-background-clip:text;background-clip:text;color:transparent}
+  .r2{font-size:clamp(120px,27.5vw,420px);color:var(--bone)}
+  .r2 .mono{display:inline-block;height:.62em;vertical-align:.02em;margin:0 .04em}
+  .info{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;padding:24px var(--gutter);border-top:1px solid var(--line);align-items:end}
+  .info p{max-width:36ch}
+  .info .muted{color:var(--ash);font-size:14px}
+  .stamp{justify-self:end;text-align:right;font-family:var(--display);text-transform:uppercase;font-weight:800;line-height:.9}
+  .stamp b{display:block;color:var(--acid);font-size:clamp(44px,5vw,72px)}
+  .stamp span{font-size:20px}
+  .band{display:flex;gap:28px;align-items:center;white-space:nowrap;background:var(--acid);color:var(--night);padding:10px 0;font-family:var(--display);font-weight:800;font-size:clamp(22px,2.4vw,34px);text-transform:uppercase;overflow:hidden}
+  .band svg{height:.62em;flex:none}
+
+  /* TICKET */
+  .events{padding:clamp(64px,10vw,140px) var(--gutter)}
+  .events h2{font-family:var(--display);font-weight:900;text-transform:uppercase;font-size:clamp(56px,9vw,140px);line-height:.8;margin-bottom:clamp(28px,4vw,48px)}
+  .ticket{--notch:18px;position:relative;display:grid;grid-template-columns:auto minmax(0,1fr) minmax(0,300px);background:var(--bone);color:var(--night);max-width:1240px;
+    -webkit-mask:radial-gradient(circle var(--notch) at var(--cut) 0,#0000 98%,#000) top/100% 51% no-repeat,radial-gradient(circle var(--notch) at var(--cut) 100%,#0000 98%,#000) bottom/100% 51% no-repeat;
+    mask:radial-gradient(circle var(--notch) at var(--cut) 0,#0000 98%,#000) top/100% 51% no-repeat,radial-gradient(circle var(--notch) at var(--cut) 100%,#0000 98%,#000) bottom/100% 51% no-repeat;
+    --cut:calc(100% - 300px)}
+  .day{padding:28px clamp(18px,2.4vw,32px);border-right:2px dashed rgba(10,10,10,.25);font-family:var(--display);text-transform:uppercase;line-height:.8;text-align:center}
+  .day b{display:block;font-size:clamp(96px,10vw,150px);font-weight:900}
+  .day span{display:block;font-size:28px;font-weight:800;line-height:1.05;margin-top:6px}
+  .body{padding:28px clamp(18px,3vw,40px)}
+  .body .meta{font-weight:600;margin-bottom:8px}
+  .body h3{font-family:var(--display);font-weight:900;text-transform:uppercase;font-size:clamp(44px,5.4vw,84px);line-height:.82;margin-bottom:18px}
+  .lineup{list-style:none;padding:0;font-family:var(--display);font-weight:700;text-transform:uppercase;font-size:clamp(24px,2.4vw,34px);line-height:1;display:flex;flex-wrap:wrap;gap:4px 18px;margin-bottom:24px}
+  .cta{display:inline-block;background:var(--night);color:var(--acid);font-weight:700;padding:15px 26px;border-radius:999px;text-decoration:none}
+  .thumb{border-left:2px dashed rgba(10,10,10,.25);padding:20px}
+  .thumb img{width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(.15) contrast(1.05)}
+
+  @media (max-width:760px){
+    .info{grid-template-columns:1fr}
+    .stamp{justify-self:start;text-align:left}
+    .ticket{grid-template-columns:auto minmax(0,1fr);--cut:calc(100% + 40px)}
+    .thumb{grid-column:1 / -1;border-left:0;border-top:2px dashed rgba(10,10,10,.25);aspect-ratio:1}
+    .day b{font-size:84px}
+    .r1{font-size:37vw;line-height:.8} .r2{font-size:30.5vw}
+    .thumb{aspect-ratio:auto}
+  }
+  br.m{display:none}
+  @media (max-width:760px){ br.m{display:inline} }
+</style>
+</head>
+<body>
+<div class="grain" aria-hidden="true"></div>
+<header>
+  <svg viewBox="0 0 225 139" fill="currentColor" role="img" aria-label="Classic Club"><path d="M90 10H0v119h90v-27H27V37h63z"/><rect x="99" width="27" height="139"/><path d="M135 10h90v119h-90v-27h63V37h-63z"/></svg>
+  <nav><a class="on" href="#">Home</a><a href="#">Serate</a><a href="#">Lista online</a></nav>
+</header>
+
+<section class="hero">
+  <h1 class="rows">
+    <span class="row r1" style="display:block">Buon<br class="m">giorno</span>
+    <span class="row r2" style="display:block">Classic<svg class="mono" viewBox="0 0 225 139" fill="currentColor" aria-hidden="true"><path d="M90 10H0v119h90v-27H27V37h63z"/><rect x="99" width="27" height="139"/><path d="M135 10h90v119h-90v-27h63V37h-63z"/></svg></span>
+  </h1>
+  <div>
+    <div class="info">
+      <p>Club e after hours a Rimini dal 1987. Due piste, piscina, giardino: si balla fino a quando esce il sole.</p>
+      <p class="muted">Circolo privato, ingresso riservato ai soci. 18+, documento obbligatorio.<br>Members only. 18+ only. ID is required.</p>
+      <div class="stamp"><b>Sab 21.11</b><span>Prossima serata, 23.45–07.00</span></div>
+    </div>
+    <div class="band" aria-hidden="true">
+      <span>Buongiorno Classic</span><svg viewBox="0 0 225 139" fill="currentColor"><path d="M90 10H0v119h90v-27H27V37h63z"/><rect x="99" width="27" height="139"/><path d="M135 10h90v119h-90v-27h63V37h-63z"/></svg>
+      <span>After</span><svg viewBox="0 0 225 139" fill="currentColor"><path d="M90 10H0v119h90v-27H27V37h63z"/><rect x="99" width="27" height="139"/><path d="M135 10h90v119h-90v-27h63V37h-63z"/></svg>
+      <span>Dal 1987</span><svg viewBox="0 0 225 139" fill="currentColor"><path d="M90 10H0v119h90v-27H27V37h63z"/><rect x="99" width="27" height="139"/><path d="M135 10h90v119h-90v-27h63V37h-63z"/></svg>
+      <span>Rimini</span><svg viewBox="0 0 225 139" fill="currentColor"><path d="M90 10H0v119h90v-27H27V37h63z"/><rect x="99" width="27" height="139"/><path d="M135 10h90v119h-90v-27h63V37h-63z"/></svg>
+      <span>Buongiorno Classic</span><svg viewBox="0 0 225 139" fill="currentColor"><path d="M90 10H0v119h90v-27H27V37h63z"/><rect x="99" width="27" height="139"/><path d="M135 10h90v119h-90v-27h63V37h-63z"/></svg>
+      <span>After</span>
+    </div>
+  </div>
+</section>
+
+<section class="events">
+  <h2>Prossime serate</h2>
+  <article class="ticket">
+    <div class="day"><b>21</b><span>Nov</span><span>Sab</span></div>
+    <div class="body">
+      <p class="meta">Dalle 23.45 alle 07.00</p>
+      <h3>Buongiorno<br>Classic</h3>
+      <ul class="lineup"><li>Flavio Vecchi</li><li>Ricky Montanari</li><li>Smoud Beats</li><li>Lucangelini</li></ul>
+      <a class="cta" href="#">Iscriviti in lista</a>
+    </div>
+    <div class="thumb"><picture><source srcset="../../public/assets/classic/poster-2026-11-21-360.avif" type="image/avif"><img src="../../public/assets/classic/poster-2026-11-21-360.webp" alt="Locandina Buongiorno Classic, 21 novembre 2026" width="360" height="432"></picture></div>
+  </article>
+</section>
+</body>
+</html>

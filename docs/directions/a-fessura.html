@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Direzione A · La fessura</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..900&family=Instrument+Sans:wdth,wght@75..100,400..700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --night:#0A0A0A; --bone:#F2F0EB; --ash:#9A978F; --line:#2A2926;
+    --accent:#FF2D6F;              /* rosso-magenta, unico accento */
+    --iri: linear-gradient(180deg,#FF2D6F 0%,#B44CFF 45%,#5CE1E6 100%);
+    --display:"Archivo",sans-serif; --text:"Instrument Sans",sans-serif;
+    --gutter:clamp(16px,4vw,56px);
+  }
+  *{box-sizing:border-box;margin:0}
+  html{background:var(--night);color:var(--bone)}
+  body{font-family:var(--text);font-size:clamp(15px,1.05vw,17px);line-height:1.5;-webkit-font-smoothing:antialiased}
+  .grain{position:fixed;inset:-50%;pointer-events:none;z-index:50;opacity:.06;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+  /* NAV */
+  header{position:absolute;inset:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:22px var(--gutter);z-index:5}
+  header svg{width:46px;color:var(--bone)}
+  nav{display:flex;gap:clamp(16px,3vw,40px);align-items:center;font-size:15px}
+  nav a{color:var(--bone);text-decoration:none}
+  .pill{border:1px solid var(--bone);border-radius:999px;padding:9px 18px}
+
+  /* HERO */
+  .hero{position:relative;height:100svh;min-height:620px;overflow:hidden;isolation:isolate}
+  .mono{position:absolute;left:50%;top:44%;width:min(118vw,1400px);transform:translate(-50%,-50%);color:rgba(242,240,235,.22);z-index:-2;overflow:visible}
+  .mono path{fill:#0d0d0d;stroke:currentColor;stroke-width:.35;vector-effect:non-scaling-stroke}
+  .slit{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);width:min(9.4vw,140px);height:min(73vw,860px);z-index:-1;
+    background:var(--iri);filter:blur(1px);opacity:.95;mix-blend-mode:screen;
+    -webkit-mask:linear-gradient(90deg,transparent 0,#000 38%,#000 62%,transparent 100%),linear-gradient(180deg,transparent,#000 12%,#000 80%,transparent);-webkit-mask-composite:source-in;mask:linear-gradient(90deg,transparent 0,#000 38%,#000 62%,transparent 100%),linear-gradient(180deg,transparent,#000 12%,#000 80%,transparent);mask-composite:intersect}
+  .glow{position:absolute;left:50%;top:44%;width:120vmax;height:120vmax;transform:translate(-50%,-50%);z-index:-3;
+    background:radial-gradient(closest-side,rgba(255,45,111,.22),rgba(180,76,255,.08) 35%,transparent 60%);width:70vmax;height:90vmax}
+  .vignette{position:absolute;inset:0;z-index:-1;background:radial-gradient(120% 90% at 50% 40%,transparent 40%,rgba(0,0,0,.85) 100%)}
+  .hero-copy{position:absolute;left:var(--gutter);right:var(--gutter);bottom:clamp(24px,5vh,56px);display:grid;grid-template-columns:1fr auto;align-items:end;gap:24px}
+  h1{font-family:var(--display);font-weight:850;font-variation-settings:"wdth" 62;text-transform:uppercase;line-height:.8;letter-spacing:-.01em;
+    font-size:clamp(96px,19vw,330px);margin-left:-.04em}
+  .sub{margin-top:18px;max-width:34ch;color:var(--bone);font-size:clamp(16px,1.4vw,20px)}
+  .entry{margin-top:10px;color:var(--ash);font-size:13px;max-width:44ch}
+  .next{border-left:2px solid var(--accent);padding-left:16px;max-width:260px}
+  .next small{color:var(--ash);display:block;font-size:13px}
+  .next b{font-family:var(--display);font-variation-settings:"wdth" 75;font-weight:800;font-size:26px;text-transform:uppercase;line-height:1;display:block;margin:6px 0 4px}
+  .scroll{position:absolute;right:var(--gutter);top:50%;writing-mode:vertical-rl;font-size:12px;color:var(--ash);letter-spacing:.06em}
+
+  /* EVENT CARD */
+  .events{padding:clamp(72px,12vw,160px) var(--gutter);border-top:1px solid var(--line)}
+  .events h2{font-family:var(--display);font-variation-settings:"wdth" 62;font-weight:800;text-transform:uppercase;font-size:clamp(48px,8vw,120px);line-height:.85;margin-bottom:clamp(32px,5vw,64px)}
+  .card{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:clamp(20px,4vw,64px);align-items:end;max-width:1200px}
+  .poster{position:relative;aspect-ratio:716/859;overflow:hidden;border-radius:2px;transform:rotate(-1.2deg)}
+  .poster img{width:100%;height:100%;object-fit:cover;display:block}
+  .poster::after{content:"";position:absolute;inset:0;box-shadow:inset 0 0 0 1px rgba(242,240,235,.15);background:linear-gradient(180deg,transparent 60%,rgba(10,10,10,.5))}
+  .date{font-family:var(--display);font-weight:900;font-variation-settings:"wdth" 62;font-size:clamp(110px,16vw,240px);line-height:.78;color:var(--accent)}
+  .date span{color:var(--bone)}
+  .card h3{font-family:var(--display);font-variation-settings:"wdth" 80;font-weight:800;text-transform:uppercase;font-size:clamp(34px,4.4vw,64px);line-height:.9;margin:20px 0 12px}
+  .meta{color:var(--ash);margin-bottom:18px}
+  .lineup{list-style:none;padding:0;font-size:clamp(17px,1.6vw,22px);line-height:1.35;margin-bottom:28px}
+  .cta{display:inline-flex;align-items:center;gap:12px;background:var(--bone);color:var(--night);font-weight:600;padding:16px 26px;border-radius:999px;text-decoration:none}
+  .cta i{width:8px;height:8px;border-radius:50%;background:var(--accent)}
+
+  @media (max-width:720px){
+    nav .hide{display:none}
+    .mono{width:150vw;top:38%} .slit{top:38%;width:12vw;height:93vw} .glow{top:38%}
+    .hero-copy{grid-template-columns:1fr}
+    .scroll{display:none}
+    .card{grid-template-columns:1fr}
+    .poster{max-width:420px}
+  }
+</style>
+</head>
+<body>
+<div class="grain" aria-hidden="true"></div>
+<header>
+  <svg viewBox="0 0 225 139" fill="currentColor" role="img" aria-label="Classic Club"><path d="M90 10H0v119h90v-27H27V37h63z"/><rect x="99" width="27" height="139"/><path d="M135 10h90v119h-90v-27h63V37h-63z"/></svg>
+  <nav><a href="#">Serate</a><a class="hide" href="#">Tesseramento</a><a class="pill" href="#">Lista online</a></nav>
+</header>
+
+<section class="hero">
+  <div class="glow" aria-hidden="true"></div>
+  <!-- monogramma come architettura: la barra centrale diventa la fessura di luce -->
+  <svg class="mono" viewBox="0 0 225 139" fill="currentColor" aria-hidden="true"><path d="M90 10H0v119h90v-27H27V37h63z"/><path d="M135 10h90v119h-90v-27h63V37h-63z"/></svg>
+  <div class="slit" aria-hidden="true"></div>
+  <div class="vignette" aria-hidden="true"></div>
+  <div class="hero-copy">
+    <div>
+      <h1>Classic<br>Club</h1>
+      <p class="sub">Club e after hours a Rimini, dal 1987. Due piste, una piscina, la domenica mattina.</p>
+      <p class="entry">Circolo privato, ingresso riservato ai soci. 18+, documento obbligatorio.<br>Members only. 18+ only. ID is required.</p>
+    </div>
+    <div class="next">
+      <small>Prossima serata</small>
+      <b>Buongiorno Classic</b>
+      <small>Sabato 21 novembre, 23.45–07.00</small>
+    </div>
+  </div>
+  <span class="scroll">Scorri</span>
+</section>
+
+<section class="events">
+  <h2>Prossime serate</h2>
+  <article class="card">
+    <div class="poster"><picture><source srcset="../../public/assets/classic/poster-2026-11-21-716.avif" type="image/avif"><img src="../../public/assets/classic/poster-2026-11-21-716.webp" alt="Locandina Buongiorno Classic, 21 novembre 2026" width="716" height="859"></picture></div>
+    <div>
+      <div class="date">21<span>.11</span></div>
+      <h3>Buongiorno Classic</h3>
+      <p class="meta">Sabato, dalle 23.45 alle 07.00</p>
+      <ul class="lineup"><li>Flavio Vecchi</li><li>Ricky Montanari</li><li>Smoud Beats</li><li>Lucangelini</li></ul>
+      <a class="cta" href="#"><i aria-hidden="true"></i>Iscriviti in lista</a>
+    </div>
+  </article>
+</section>
+</body>
+</html>
