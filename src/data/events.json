@@ -1,0 +1,43 @@
+[
+  {
+    "id": "buongiorno-classic-2026-11-21",
+    "title": "Buongiorno Classic",
+    "label": "After",
+    "date": "2026-11-21",
+    "start": "23.45",
+    "end": "07.00",
+    "summary": "L'after del Classic. Si entra prima di mezzanotte, si esce con la luce del mattino.",
+    "lineup": [
+      { "role": "Consolle", "names": ["Flavio Vecchi", "Ricky Montanari", "Smoud Beats", "Lucangelini"] }
+    ],
+    "poster": "poster-2026-11-21"
+  },
+  {
+    "id": "midnight-tension-2026-11-28",
+    "title": "Midnight Tension",
+    "subtitle": "Wintertime @ Classic Club",
+    "label": "Serata LGBTQIA+",
+    "date": "2026-11-28",
+    "start": "23.45",
+    "end": "05.00",
+    "summary": "Una notte della stagione Wintertime con consolle, voce dal vivo e performance.",
+    "lineup": [
+      { "role": "Consolle", "names": ["Federico Santini", "Nikos"] },
+      { "role": "Voice", "names": ["Shasha"] },
+      { "role": "Performers", "names": ["Raven Idoll", "Davide", "Chiara"] }
+    ],
+    "poster": "poster-2026-11-28"
+  },
+  {
+    "id": "classic-tunga-2026-12-07",
+    "title": "Classic & Tunga",
+    "subtitle": "Happy Birthday Classic, 39 anni",
+    "label": "Compleanno",
+    "date": "2026-12-07",
+    "start": "23.45",
+    "end": "05.00",
+    "summary": "Il Classic compie 39 anni e festeggia insieme a Tunga. La line-up sarà annunciata a breve.",
+    "lineup": [],
+    "poster": "poster-2026-12-07"
+  }
+]

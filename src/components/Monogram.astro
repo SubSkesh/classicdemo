@@ -1,0 +1,22 @@
+---
+/** Monogramma Classic ricostruito in vettoriale. `variant="stroke"` serve all'animazione di disegno. */
+interface Props { variant?: 'fill' | 'stroke' | 'walls'; class?: string; label?: string }
+const { variant = 'fill', class: cls, label } = Astro.props;
+const a11y = label ? { role: 'img' as const, 'aria-label': label } : { 'aria-hidden': 'true' as const };
+---
+{variant === 'stroke' ? (
+  <svg class={cls} viewBox="0 0 225 139" fill="none" stroke="currentColor" stroke-width="27" stroke-linejoin="miter" {...a11y}>
+    <path class="m-left" d="M90 23.5H13.5v92H90" />
+    <path class="m-bar" d="M112.5 0v139" />
+    <path class="m-right" d="M135 23.5h76.5v92H135" />
+  </svg>
+) : variant === 'walls' ? (
+  <svg class={cls} viewBox="0 0 225 139" {...a11y}>
+    <path class="m-left" d="M90 10H0v119h90v-27H27V37h63z" />
+    <path class="m-right" d="M135 10h90v119h-90v-27h63V37h-63z" />
+  </svg>
+) : (
+  <svg class={cls} viewBox="0 0 225 139" fill="currentColor" {...a11y}>
+    <path d="M90 10H0v119h90v-27H27V37h63z" /><rect x="99" width="27" height="139" /><path d="M135 10h90v119h-90v-27h63V37h-63z" />
+  </svg>
+)}

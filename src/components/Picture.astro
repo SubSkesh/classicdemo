@@ -1,0 +1,19 @@
+---
+import { img } from '../lib/images';
+
+interface Props {
+  name: string;
+  alt: string;
+  sizes?: string;
+  class?: string;
+  loading?: 'lazy' | 'eager';
+  fetchpriority?: 'high' | 'low' | 'auto';
+}
+const { name, alt, sizes = '100vw', class: cls, loading = 'lazy', fetchpriority = 'auto' } = Astro.props;
+const i = img(name);
+---
+<picture class={cls}>
+  <source type="image/avif" srcset={i.avif} sizes={sizes} />
+  <source type="image/webp" srcset={i.webp} sizes={sizes} />
+  <img src={i.src} alt={alt} width={i.width} height={i.height} loading={loading} decoding="async" fetchpriority={fetchpriority} style={`background-image:url(${i.lqip});background-size:cover`} />
+</picture>

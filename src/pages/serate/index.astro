@@ -1,0 +1,35 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getEvents, dateParts, eventUrl, allNames } from '../../lib/events';
+const events = await getEvents();
+---
+<Base page="serate" title="Serate" description="Il programma delle prossime serate al Classic Club di Rimini.">
+  <section class="wrap head">
+    <h1 class="display">Serate</h1>
+    <p class="muted">Inverno 2026. Ingresso riservato ai soci.</p>
+  </section>
+  <ol class="list" role="list">
+    {events.map((e) => {
+      const d = dateParts(e.data.date);
+      return (
+        <li>
+          <a class="row wrap" href={eventUrl(e)}>
+            <span class="date display">{d.day}.{d.month}</span>
+            <span class="title display">{e.data.title}</span>
+            <span class="who muted">{allNames(e).join(', ') || 'Line-up in arrivo'}</span>
+          </a>
+        </li>
+      );
+    })}
+  </ol>
+</Base>
+
+<style>
+  .head { padding-top: clamp(120px, 20vh, 200px); padding-bottom: 48px; }
+  h1 { font-size: var(--fs-h1); }
+  .list { border-top: 1px solid var(--line); }
+  .row { display: grid; grid-template-columns: 9ch 1fr minmax(0, 32ch); gap: 24px; align-items: baseline; padding-block: 28px; border-bottom: 1px solid var(--line); text-decoration: none; }
+  .date { font-size: clamp(36px, 5vw, 72px); color: var(--accent); }
+  .title { font-size: clamp(36px, 5vw, 72px); }
+  @media (max-width: 760px) { .row { grid-template-columns: 1fr; gap: 6px; } }
+</style>

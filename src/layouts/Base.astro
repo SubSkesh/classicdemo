@@ -1,0 +1,44 @@
+---
+import '@fontsource-variable/archivo/wdth.css';
+import '@fontsource-variable/instrument-sans/wght.css';
+import '../styles/global.css';
+import archivoLatin from '@fontsource-variable/archivo/files/archivo-latin-wdth-normal.woff2?url';
+import { ClientRouter } from 'astro:transitions';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+
+interface Props {
+  page: 'home' | 'serate' | 'evento';
+  title?: string;
+  description?: string;
+}
+const { page, title, description = 'Classic Club, club e after hours a Rimini dal 1987. Circolo privato ARCI.' } = Astro.props;
+const fullTitle = title ? `${title} | Classic Club Rimini` : 'Classic Club Rimini';
+---
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="robots" content="noindex, nofollow, noarchive" />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#0A0A0A" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preload" href={archivoLatin} as="font" type="font/woff2" crossorigin />
+    <title>{fullTitle}</title>
+    <ClientRouter fallback="swap" />
+    <slot name="head" />
+  </head>
+  <body>
+    <a class="skip" href="#main">Vai al contenuto</a>
+    <div class="grain" aria-hidden="true"></div>
+    <Header />
+    <main id="main" data-page={page}>
+      <slot />
+    </main>
+    <Footer />
+    <script>
+      import '../scripts/app';
+    </script>
+  </body>
+</html>

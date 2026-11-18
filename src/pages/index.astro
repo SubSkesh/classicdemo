@@ -1,0 +1,37 @@
+---
+import Base from '../layouts/Base.astro';
+import { getEvents, dateParts, eventUrl } from '../lib/events';
+const events = await getEvents();
+const next = events[0];
+const np = next ? dateParts(next.data.date) : null;
+---
+<Base page="home">
+  <section class="hero" id="hero">
+    <div class="hero-copy wrap">
+      <h1 class="display">Classic<br />Club</h1>
+      <p class="lead">Club e after hours a Rimini, dal 1987.</p>
+      {next && np && (
+        <a class="next" href={eventUrl(next)}>
+          <span class="muted">Prossima serata</span>
+          <b>{next.data.title}</b>
+          <span class="muted">{np.long}, {next.data.start}–{next.data.end}</span>
+        </a>
+      )}
+    </div>
+  </section>
+  <section class="block wrap" id="marquee"><p class="muted">Marquee</p></section>
+  <section class="block wrap" id="prossime"><h2 class="display">Prossime serate</h2></section>
+  <section class="block wrap" id="manifesto"><p class="muted">Manifesto</p></section>
+  <section class="block wrap" id="galleria"><p class="muted">Galleria</p></section>
+  <section class="block wrap" id="tesseramento"><h2 class="display">Tesseramento</h2></section>
+</Base>
+
+<style>
+  .hero { min-height: 100svh; display: flex; align-items: flex-end; padding-bottom: clamp(24px, 6vh, 56px); }
+  h1 { font-size: var(--fs-h1); margin-left: -0.04em; }
+  .lead { font-size: var(--fs-lead); margin-top: 16px; }
+  .next { display: grid; gap: 4px; margin-top: 28px; padding-left: 16px; border-left: 2px solid var(--accent); text-decoration: none; max-width: 300px; }
+  .next b { font-family: var(--display); font-stretch: 75%; font-weight: 800; font-size: 26px; text-transform: uppercase; line-height: 1; }
+  .block { padding-block: var(--section); border-top: 1px solid var(--line); }
+  h2 { font-size: var(--fs-h2); }
+</style>

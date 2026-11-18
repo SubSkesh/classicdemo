@@ -1,0 +1,45 @@
+---
+import Monogram from './Monogram.astro';
+---
+<footer class="site-footer">
+  <div class="top">
+    <Monogram class="f-mark" />
+    <p class="entry">
+      Circolo privato ARCI. Ingresso riservato ai soci, 18+, documento obbligatorio.<br />
+      <span lang="en">Members only. 18+ only. ID is required.</span>
+    </p>
+  </div>
+  <div class="cols">
+    <address>
+      Classic Club<br />Via Feleto 15, Rimini
+    </address>
+    <ul role="list">
+      <li><a href="https://www.instagram.com/classicclubrimini/" rel="noopener" target="_blank">Instagram</a></li>
+      <li><a href="https://www.facebook.com/classicclub.rimini.officialpage/" rel="noopener" target="_blank">Facebook</a></li>
+    </ul>
+    <ul role="list">
+      <li><a href="/serate/">Serate</a></li>
+      <li><a href="/#tesseramento">Tesseramento</a></li>
+    </ul>
+  </div>
+  <p class="note muted">Anteprima di design realizzata da OC Software. Non è il sito ufficiale e non raccoglie dati.</p>
+</footer>
+
+<style>
+  .site-footer { padding: var(--section) var(--gutter) 28px; border-top: 1px solid var(--line); }
+  .top { display: grid; gap: 28px; grid-template-columns: auto 1fr; align-items: end; margin-bottom: 56px; }
+  .top :global(.f-mark) { width: clamp(120px, 18vw, 240px); color: var(--bone); }
+  .entry { max-width: 46ch; justify-self: end; text-align: right; color: var(--ash); }
+  .cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; padding-block: 28px; border-top: 1px solid var(--line); }
+  address { font-style: normal; }
+  ul { display: grid; gap: 6px; }
+  a { text-decoration: none; }
+  a:hover { text-decoration: underline; text-underline-offset: 4px; }
+  .note { font-size: var(--fs-small); padding-top: 20px; }
+  @media (max-width: 720px) {
+    .top { grid-template-columns: 1fr; }
+    .entry { justify-self: start; text-align: left; }
+    .cols { grid-template-columns: 1fr 1fr; }
+    address { grid-column: 1 / -1; }
+  }
+</style>
