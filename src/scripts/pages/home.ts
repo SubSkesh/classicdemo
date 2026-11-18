@@ -163,9 +163,11 @@ const init: PageInit = (root) => {
   /* ---------- Manifesto: si illumina parola per parola ---------- */
   const manifesto = root.querySelector<HTMLElement>('[data-manifesto]');
   if (manifesto && !reduce) {
-    const s = SplitText.create(manifesto, { type: 'words', wordsClass: 'word' });
-    gsap.fromTo(s.words, { opacity: 0.14 }, {
-      opacity: 1, ease: 'none', stagger: 0.1,
+    // il testo vero è in una copia sr-only: qui niente ARIA. Il grigio di partenza (#6e6c67, 3,6:1)
+    // rispetta già il contrasto AA per testo grande, la parola "si accende" fino al bianco osso.
+    const s = SplitText.create(manifesto, { type: 'words', wordsClass: 'word', aria: 'none' });
+    gsap.fromTo(s.words, { color: '#6e6c67' }, {
+      color: '#f2f0eb', ease: 'none', stagger: 0.1,
       scrollTrigger: { trigger: manifesto, start: 'top 80%', end: 'bottom 45%', scrub: true },
     });
     cleanups.push(() => s.revert());
