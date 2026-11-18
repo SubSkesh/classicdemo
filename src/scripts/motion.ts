@@ -39,3 +39,6 @@ reducedMotion.addEventListener('change', () => {
   ScrollTrigger.refresh();
 });
 document.documentElement.classList.toggle('reduced', reducedMotion.matches);
+
+/** true dopo la prima navigazione client-side (View Transitions): le pagine evitano di duplicare il morph. */
+export const nav = { client: false };

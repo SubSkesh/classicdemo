@@ -1,4 +1,4 @@
-import { gsap, ScrollTrigger, lenis, startLenis } from './motion';
+import { gsap, ScrollTrigger, lenis, startLenis, nav } from './motion';
 
 type Cleanup = () => void;
 export type PageInit = (root: HTMLElement) => Cleanup | void;
@@ -28,6 +28,7 @@ document.addEventListener('astro:page-load', async () => {
 });
 
 document.addEventListener('astro:before-swap', () => {
+  nav.client = true;
   cleanup?.();
   cleanup = undefined;
   ctx?.revert();

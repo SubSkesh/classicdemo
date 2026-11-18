@@ -52,6 +52,7 @@ body {
   overflow-x: clip;
 }
 img, picture, svg, video { display: block; max-width: 100%; }
+[hidden] { display: none !important; }
 img { height: auto; }
 a { color: inherit; }
 button { font: inherit; color: inherit; }
@@ -125,7 +126,14 @@ html.lenis, html.lenis body { height: auto; }
 .lenis [data-lenis-prevent] { overscroll-behavior: contain; }
 .lenis.lenis-smooth iframe { pointer-events: none; }
 
+/* View Transitions: fessura che si apre + morph lento di locandina e titolo */
+@keyframes vt-slit { from { clip-path: inset(0 50% 0 50%); } to { clip-path: inset(0 0 0 0); } }
+@keyframes vt-recede { to { opacity: 0.25; transform: scale(0.96); filter: blur(4px); } }
+::view-transition-group(*) { animation-duration: 0.9s; animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1); }
+::view-transition-old(root), ::view-transition-new(root) { mix-blend-mode: normal; }
+
 @media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;

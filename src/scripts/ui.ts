@@ -9,6 +9,9 @@ function openDialog(id: string, trigger?: HTMLElement | null) {
   if (!(dlg instanceof HTMLDialogElement)) return;
   lastTrigger = trigger ?? null;
   resetDialog(dlg);
+  const pre = trigger?.dataset.preselect;
+  const select = dlg.querySelector<HTMLSelectElement>('select[name="serata"]');
+  if (pre && select) select.value = pre;
   dlg.showModal();
   lenis?.stop();
   dlg.dispatchEvent(new CustomEvent('mock:open', { detail: { trigger } }));
@@ -30,6 +33,7 @@ document.addEventListener('click', (ev) => {
   const opener = t.closest<HTMLElement>('[data-dialog-open]');
   if (opener) {
     ev.preventDefault();
+    ev.stopPropagation();
     openDialog(opener.dataset.dialogOpen!, opener);
     return;
   }
@@ -39,7 +43,7 @@ document.addEventListener('click', (ev) => {
   }
   // clic sul backdrop
   if (t instanceof HTMLDialogElement && t.open) t.close();
-});
+}, true); // capture: deve precedere il router di Astro sui link che aprono un modale
 
 document.addEventListener(
   'close',
@@ -69,11 +73,33 @@ document.addEventListener('submit', (ev) => {
   // nessun invio: solo stato di successo simulato
   const ok = form.parentElement?.querySelector<HTMLElement>('[data-mock-success]');
   if (!ok) return;
+  const summary = ok.querySelector<HTMLElement>('[data-list-summary]');
+  const sel = form.querySelector<HTMLSelectElement>('select[name="serata"]');
+  const nome = form.querySelector<HTMLInputElement>('input[name="nome"]')?.value.trim();
+  if (summary && sel) summary.textContent = `${nome ? nome + ', sei' : 'Sei'} in lista per ${sel.selectedOptions[0]?.textContent?.trim()}.`;
   form.hidden = true;
   ok.hidden = false;
   ok.focus();
+  ok.closest('.panel')?.scrollTo({ top: 0 });
   if (!reducedMotion.matches) gsap.from(ok.children, { y: 24, opacity: 0, stagger: 0.08, duration: 0.8 });
 });
+
+/* ---------------- Morph tra pagine (View Transitions) ----------------
+   Un link con data-vt="nome" dà quel nome all'elemento sorgente appena prima della navigazione:
+   l'elemento con lo stesso nome nella pagina di arrivo ne eredita la posizione (locandina che vola). */
+document.addEventListener(
+  'click',
+  (ev) => {
+    const a = (ev.target as HTMLElement).closest<HTMLAnchorElement>('a[data-vt]');
+    if (!a) return;
+    const sel = a.dataset.vtTarget;
+    const el = (sel && document.querySelector<HTMLElement>(sel)) || a.closest('[data-vt-scope]')?.querySelector<HTMLElement>('[data-vt-el]');
+    if (el) el.style.viewTransitionName = a.dataset.vt!;
+    const title = a.closest('[data-vt-scope]')?.querySelector<HTMLElement>('[data-vt-title]');
+    if (title) title.style.viewTransitionName = a.dataset.vt!.replace('poster-', 'title-');
+  },
+  true,
+);
 
 /* ---------------- Cursore (solo desktop con mouse) ---------------- */
 

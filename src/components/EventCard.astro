@@ -8,15 +8,15 @@ const e = event.data;
 const d = dateParts(e.date);
 const names = allNames(event);
 ---
-<article class="card" data-card>
-  <a class="hit" href={eventUrl(event)} data-cursor="Apri" aria-label={`${e.title}, ${d.long}: dettagli e lista`}></a>
-  <div class="poster" data-tilt>
+<article class="card" data-card data-vt-scope>
+  <a class="hit" href={eventUrl(event)} data-cursor="Apri" data-vt={`poster-${event.id}`} aria-label={`${e.title}, ${d.long}: dettagli e lista`}></a>
+  <div class="poster" data-tilt data-vt-el>
     <Picture name={e.poster} alt={`Locandina ${e.title}`} sizes="(min-width: 1024px) 30vw, 80vw" loading={eager ? 'eager' : 'lazy'} />
   </div>
   <div class="info">
     <p class="date display"><span>{d.day}</span>.{d.month}</p>
     <p class="label muted">{d.weekday}, {e.start}–{e.end} <span aria-hidden="true">/</span> {e.label}</p>
-    <h3 class="display">{e.title}</h3>
+    <h3 class="display" data-vt-title>{e.title}</h3>
     <p class="who">{names.length ? names.join(', ') : 'Line-up in arrivo'}</p>
   </div>
 </article>

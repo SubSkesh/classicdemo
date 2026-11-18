@@ -1,35 +1,108 @@
 ---
 import Base from '../../layouts/Base.astro';
+import Picture from '../../components/Picture.astro';
 import { getEvents, dateParts, eventUrl, allNames } from '../../lib/events';
 const events = await getEvents();
 ---
 <Base page="serate" title="Serate" description="Il programma delle prossime serate al Classic Club di Rimini.">
-  <section class="wrap head">
-    <h1 class="display">Serate</h1>
-    <p class="muted">Inverno 2026. Ingresso riservato ai soci.</p>
+  <section class="head wrap">
+    <h1 class="display" data-split>Serate</h1>
+    <div class="head-side" data-fade>
+      <p>Inverno 2026 al Classic. Si entra con la tessera, la lista online dà l'ingresso ridotto.</p>
+      <button class="btn btn--ghost" type="button" data-dialog-open="dlg-lista">Lista online</button>
+    </div>
   </section>
-  <ol class="list" role="list">
+
+  <ol class="list" role="list" data-list>
     {events.map((e) => {
       const d = dateParts(e.data.date);
+      const names = allNames(e);
       return (
-        <li>
-          <a class="row wrap" href={eventUrl(e)}>
-            <span class="date display">{d.day}.{d.month}</span>
-            <span class="title display">{e.data.title}</span>
-            <span class="who muted">{allNames(e).join(', ') || 'Line-up in arrivo'}</span>
+        <li class="item" data-vt-scope data-row data-id={e.id}>
+          <a class="row wrap" href={eventUrl(e)} data-vt={`poster-${e.id}`}>
+            <span class="date display" aria-hidden="true"><b>{d.day}</b>.{d.month}</span>
+            <span class="main">
+              <span class="meta muted">{d.weekday} {d.day} {d.monthName}, {e.data.start}–{e.data.end} <span aria-hidden="true">/</span> {e.data.label}</span>
+              <span class="title display" data-vt-title>{e.data.title}</span>
+              <span class="who">{names.length ? names.join(', ') : 'Line-up in arrivo'}</span>
+            </span>
+            <span class="thumb" data-vt-el aria-hidden="true">
+              <Picture name={e.data.poster} alt="" sizes="96px" />
+            </span>
           </a>
         </li>
       );
     })}
   </ol>
+
+  <!-- locandina che segue il cursore (solo desktop con mouse) -->
+  <div class="follow" aria-hidden="true" data-follow>
+    {events.map((e) => (
+      <div class="follow-img" id={`follow-${e.id}`} data-follow-img={e.id}>
+        <Picture name={e.data.poster} alt="" sizes="340px" />
+      </div>
+    ))}
+  </div>
+
+  <section class="rules wrap" aria-labelledby="rules-title">
+    <h2 id="rules-title" class="display">Per entrare</h2>
+    <ul role="list">
+      <li><b>Documento valido</b><span>Fisico, niente foto sul telefono.</span><span lang="en" class="muted">Valid ID required, no photos.</span></li>
+      <li><b>Tessera Classic, ARCI o ARCO</b><span>Scaduta? Si rinnova all'ingresso.</span><span lang="en" class="muted">Members only.</span></li>
+      <li><b>Prima volta?</b><span>Pre-tesseramento online almeno 24 ore prima.</span><span lang="en" class="muted">New members: apply 24h before.</span></li>
+    </ul>
+  </section>
 </Base>
 
 <style>
-  .head { padding-top: clamp(120px, 20vh, 200px); padding-bottom: 48px; }
-  h1 { font-size: var(--fs-h1); }
+  .head {
+    padding-top: clamp(120px, 22vh, 220px); padding-bottom: clamp(40px, 6vw, 72px);
+    display: grid; grid-template-columns: 1fr minmax(0, 30ch); gap: 32px; align-items: end;
+  }
+  h1 { font-size: var(--fs-h1); margin-left: -0.04em; }
+  .head-side { display: grid; gap: 20px; justify-items: start; color: var(--ash); }
+
   .list { border-top: 1px solid var(--line); }
-  .row { display: grid; grid-template-columns: 9ch 1fr minmax(0, 32ch); gap: 24px; align-items: baseline; padding-block: 28px; border-bottom: 1px solid var(--line); text-decoration: none; }
-  .date { font-size: clamp(36px, 5vw, 72px); color: var(--accent); }
-  .title { font-size: clamp(36px, 5vw, 72px); }
-  @media (max-width: 760px) { .row { grid-template-columns: 1fr; gap: 6px; } }
+  .item { border-bottom: 1px solid var(--line); position: relative; }
+  .row {
+    display: grid; grid-template-columns: minmax(0, 2.3fr) minmax(0, 7fr) auto; gap: clamp(16px, 3vw, 48px);
+    align-items: center; padding-block: clamp(24px, 3.4vw, 44px); text-decoration: none;
+    transition: opacity 0.5s var(--ease-out);
+  }
+  .date { font-size: clamp(56px, 8.4vw, 150px); line-height: 0.8; color: var(--bone); white-space: nowrap; }
+  .date b { color: var(--accent); font-weight: inherit; }
+  .main { display: grid; gap: 8px; min-width: 0; }
+  .meta { font-size: var(--fs-small); }
+  .title { font-size: clamp(40px, 6vw, 108px); line-height: 0.84; transition: transform 0.6s var(--ease-out); }
+  .who { color: var(--ash); max-width: 60ch; }
+  .thumb { width: 72px; border-radius: 2px; overflow: hidden; }
+  .thumb :global(img) { width: 100%; }
+
+  /* hover: le altre righe si spengono, la riga attiva scorre di lato */
+  .list:has(.row:hover) .row:not(:hover) { opacity: 0.28; }
+  .row:hover .title, .row:focus-visible .title { transform: translateX(0.12em); }
+
+  .follow { display: none; }
+  :global(html.has-cursor) .thumb { display: none; }
+  :global(html.has-cursor) .row { grid-template-columns: minmax(0, 2.3fr) minmax(0, 7fr); }
+  :global(html.has-cursor) .follow {
+    display: block; position: fixed; left: 0; top: 0; z-index: 30; width: 0; height: 0; pointer-events: none;
+  }
+  .follow-img { position: absolute; left: -150px; top: -180px; width: 300px; opacity: 0; transform: scale(0.85); border-radius: 3px; overflow: hidden; }
+  .follow-img :global(img) { width: 100%; }
+
+  .rules { padding-block: var(--section); }
+  .rules h2 { font-size: var(--fs-h2); margin-bottom: clamp(28px, 4vw, 48px); }
+  .rules ul { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; border-top: 1px solid var(--line); }
+  .rules li { display: grid; gap: 6px; align-content: start; padding: 24px 24px 24px 0; border-bottom: 1px solid var(--line); }
+  .rules b { font-size: clamp(18px, 1.6vw, 22px); font-weight: 600; }
+
+  @media (max-width: 760px) {
+    .head { grid-template-columns: 1fr; }
+    .row { grid-template-columns: minmax(0, 1fr) 64px; grid-template-areas: 'date thumb' 'main main'; row-gap: 14px; }
+    .date { grid-area: date; }
+    .thumb { grid-area: thumb; width: 64px; justify-self: end; }
+    .main { grid-area: main; }
+    .rules ul { grid-template-columns: 1fr; }
+  }
 </style>

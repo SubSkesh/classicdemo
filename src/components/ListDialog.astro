@@ -1,0 +1,27 @@
+---
+import MockDialog from './MockDialog.astro';
+import { getEvents, dateParts } from '../lib/events';
+const events = await getEvents();
+---
+<MockDialog id="dlg-lista" title="Lista online" intro="Riservata ai soci Classic, ARCI e ARCO. In lista entri a prezzo ridotto: mostra la conferma alla cassa." submitLabel="Mettimi in lista">
+  <label>Serata
+    <select name="serata" required>
+      {events.map((e) => {
+        const d = dateParts(e.data.date);
+        return <option value={e.id}>{d.day}.{d.month} {e.data.title}</option>;
+      })}
+    </select>
+  </label>
+  <div class="grid2">
+    <label>Nome<input name="nome" autocomplete="given-name" required /></label>
+    <label>Cognome<input name="cognome" autocomplete="family-name" required /></label>
+  </div>
+  <label>Email<input name="email" type="email" autocomplete="email" required /></label>
+  <label class="check"><input type="checkbox" name="privacy" required /> Acconsento al trattamento dei dati per la gestione della lista</label>
+  <label class="check"><input type="checkbox" name="news" /> Voglio ricevere la newsletter del Classic</label>
+  <Fragment slot="success">
+    <p class="ok-title display">Sei in lista</p>
+    <p data-list-summary>Ti abbiamo messo in lista.</p>
+    <p class="muted">Porta un documento valido e la tessera. Questa è una demo: nessun dato è stato inviato.</p>
+  </Fragment>
+</MockDialog>

@@ -7,6 +7,7 @@ import { ClientRouter } from 'astro:transitions';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import Cursor from '../components/Cursor.astro';
+import ListDialog from '../components/ListDialog.astro';
 
 interface Props {
   page: 'home' | 'serate' | 'evento';
@@ -15,9 +16,17 @@ interface Props {
 }
 const { page, title, description = 'Classic Club, club e after hours a Rimini dal 1987. Circolo privato ARCI.' } = Astro.props;
 const fullTitle = title ? `${title} | Classic Club Rimini` : 'Classic Club Rimini';
+
+// transizione di pagina: la nuova pagina si apre dalla fessura centrale, come la hero
+const ease = 'cubic-bezier(0.65, 0, 0.35, 1)';
+const slit = {
+  old: { name: 'vt-recede', duration: '0.7s', easing: ease, fillMode: 'both' },
+  new: { name: 'vt-slit', duration: '0.9s', easing: ease, fillMode: 'both', delay: '0.05s' },
+};
+const pageTransition = { forwards: slit, backwards: slit };
 ---
 <!doctype html>
-<html lang="it">
+<html lang="it" transition:animate={pageTransition}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -50,6 +59,7 @@ const fullTitle = title ? `${title} | Classic Club Rimini` : 'Classic Club Rimin
       <slot />
     </main>
     <Footer />
+    <ListDialog />
     <Cursor />
     <script>
       import '../scripts/app';
