@@ -23,7 +23,18 @@ for (const route of routes) {
     await page.evaluate(() => document.fonts.ready);
     await page.waitForTimeout(Number(process.env.WAIT ?? 2600));
     const slug = route.replace(/\//g, '_').replace(/^_|_$/g, '') || 'home';
-    await page.screenshot({ path: `${out}/${slug}-${name}.png`, fullPage: !process.env.VIEWPORT_ONLY });
+    if (process.env.TOUR) {
+      // scorre con la rotella come un utente (Lenis + ScrollTrigger reagiscono davvero) e scatta a ogni passo
+      const steps = Number(process.env.TOUR);
+      for (let i = 0; i < steps; i++) {
+        await page.screenshot({ path: `${out}/${slug}-${name}-tour${String(i).padStart(2, '0')}.png` });
+        await page.mouse.move(viewport.width / 2, viewport.height / 2);
+        await page.mouse.wheel(0, viewport.height * 0.85);
+        await page.waitForTimeout(1100);
+      }
+    } else {
+      await page.screenshot({ path: `${out}/${slug}-${name}.png`, fullPage: !process.env.VIEWPORT_ONLY });
+    }
     if (errors.length) console.log(`[${route} ${name}] errori:`, errors);
     await ctx.close();
   }

@@ -1,0 +1,85 @@
+---
+import Picture from '../Picture.astro';
+---
+<section class="gallery" aria-labelledby="gallery-title">
+  <div class="wrap head">
+    <h2 id="gallery-title" class="display">La notte<br />al Classic</h2>
+  </div>
+
+  <!-- 1. la fessura si apre sulla pista -->
+  <figure class="g g-wide" data-open>
+    <div class="mask" data-open-mask>
+      <div class="inner" data-parallax="0.18">
+        <Picture name="photo-crowd" alt="La pista del Classic piena, luci calde e mani alzate verso la consolle" sizes="(max-width: 760px) 200vw, 100vw" />
+      </div>
+    </div>
+    <figcaption class="wrap">La pista</figcaption>
+  </figure>
+
+  <div class="pair wrap">
+    <figure class="g g-aerial" data-clip>
+      <div class="mask"><div class="inner" data-parallax="0.12">
+        <Picture name="photo-aerial" alt="Performer al cerchio aereo sospesa nel fumo viola" sizes="(min-width: 900px) 62vw, 100vw" />
+      </div></div>
+      <figcaption>Performance</figcaption>
+    </figure>
+    <figure class="g g-round duo" data-float="-60">
+      <Picture name="photo-pool-round" alt="La piscina illuminata di notte, con le persone intorno" sizes="296px" />
+      <figcaption>La piscina</figcaption>
+    </figure>
+  </div>
+
+  <div class="pair pair--rev wrap">
+    <figure class="g g-round duo" data-float="40">
+      <Picture name="photo-floor-round" alt="La pista rossa vista dalla consolle" sizes="251px" />
+      <figcaption>Pista rossa</figcaption>
+    </figure>
+    <figure class="g g-arch" data-clip>
+      <div class="mask"><div class="inner" data-parallax="0.12">
+        <Picture name="photo-architecture" alt="Dettaglio in bianco e nero dell'architettura del circolo, superfici metalliche e onde" sizes="(min-width: 900px) 62vw, 100vw" />
+      </div></div>
+      <figcaption>Il circolo</figcaption>
+    </figure>
+  </div>
+</section>
+
+<style>
+  .gallery { padding-block: var(--section); }
+  .head { margin-bottom: clamp(32px, 5vw, 64px); }
+  h2 { font-size: var(--fs-h2); }
+  figure { margin: 0; }
+  figcaption { font-size: var(--fs-small); color: var(--ash); margin-top: 12px; }
+  .mask { overflow: hidden; border-radius: 2px; }
+  .inner { will-change: transform; }
+  .inner :global(img) { width: 100%; height: 100%; object-fit: cover; }
+
+  .g-wide .mask { height: clamp(320px, 62svh, 720px); clip-path: inset(0 0 0 0); }
+  .g-wide .inner { height: 130%; margin-top: -15%; }
+  .g-wide .inner :global(picture), .g-wide .inner :global(img) { height: 100%; }
+
+  .pair { display: grid; grid-template-columns: minmax(0, 62fr) minmax(0, 30fr); gap: clamp(20px, 6vw, 96px); align-items: end; margin-top: clamp(64px, 10vw, 140px); }
+  .pair--rev { grid-template-columns: minmax(0, 30fr) minmax(0, 62fr); align-items: start; }
+  .g-aerial .mask, .g-arch .mask { aspect-ratio: 16 / 9; }
+  .g-aerial .inner, .g-arch .inner { height: 124%; margin-top: -12%; }
+  .g-aerial .inner :global(picture), .g-arch .inner :global(picture),
+  .g-aerial .inner :global(img), .g-arch .inner :global(img) { height: 100%; }
+
+  .g-round { justify-self: center; width: min(100%, 300px); }
+  .g-round :global(img) { width: 100%; border-radius: 50%; }
+
+  /* duotono unico, per far parlare tra loro foto di anni diversi */
+  .duo :global(picture) { position: relative; display: block; border-radius: 50%; overflow: hidden; }
+  .duo :global(picture)::after {
+    content: ''; position: absolute; inset: 0; border-radius: 50%;
+    background: linear-gradient(160deg, var(--accent), #3b0f5c); mix-blend-mode: color; opacity: 0.85;
+  }
+
+  @media (max-width: 760px) {
+    .pair, .pair--rev { grid-template-columns: 1fr; }
+    .g-round { width: 62vw; }
+    .pair .g-round { justify-self: end; margin-top: -18vw; }
+    .pair--rev .g-round { justify-self: start; order: 2; margin-top: -14vw; position: relative; z-index: 1; }
+    .g-aerial .mask, .g-arch .mask { aspect-ratio: 4 / 3; }
+    .g-wide .mask { height: 78vw; }
+  }
+</style>

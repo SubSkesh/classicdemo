@@ -1,0 +1,58 @@
+---
+/**
+ * Modulo finto dentro un <dialog> nativo: focus trap, Esc e ritorno del focus li gestisce il browser.
+ * L'invio non spedisce nulla: mostra solo lo stato di successo.
+ */
+interface Props { id: string; title: string; intro?: string; submitLabel?: string }
+const { id, title, intro, submitLabel = 'Invia richiesta' } = Astro.props;
+---
+<dialog class="dlg" id={id} aria-labelledby={`${id}-title`} data-lenis-prevent>
+  <div class="panel">
+    <button class="close" type="button" data-dialog-close aria-label="Chiudi">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19" stroke="currentColor" stroke-width="1.6" /></svg>
+    </button>
+    <form method="dialog" class="form" data-mock-form novalidate>
+      <h2 id={`${id}-title`} class="display">{title}</h2>
+      {intro && <p class="muted">{intro}</p>}
+      <slot />
+      <p class="demo">Anteprima: il modulo non invia né salva dati.</p>
+      <button class="btn" type="submit">{submitLabel}</button>
+    </form>
+    <div class="success" hidden data-mock-success tabindex="-1">
+      <slot name="success" />
+      <button class="btn btn--ghost" type="button" data-dialog-close>Chiudi</button>
+    </div>
+  </div>
+</dialog>
+
+<style>
+  .dlg {
+    border: 0; padding: 0; margin: 0 0 0 auto; height: 100dvh; max-height: none; width: min(560px, 100vw);
+    background: var(--night-2); color: var(--bone); box-shadow: -1px 0 0 var(--line);
+  }
+  .dlg::backdrop { background: rgb(0 0 0 / 0.6); backdrop-filter: blur(6px); }
+  .dlg[open] { animation: slide-in 0.6s var(--ease-out); }
+  .dlg[open]::backdrop { animation: fade 0.4s ease; }
+  @keyframes slide-in { from { transform: translateX(100%); } }
+  @keyframes fade { from { opacity: 0; } }
+  .panel { position: relative; height: 100%; overflow-y: auto; padding: clamp(28px, 5vw, 56px) clamp(20px, 4vw, 48px); }
+  .close { position: absolute; right: 16px; top: 16px; width: 48px; height: 48px; display: grid; place-items: center; background: none; border: 0; cursor: pointer; border-radius: 50%; }
+  .close svg { width: 24px; height: 24px; }
+  .form, .success { display: grid; gap: 18px; }
+  h2 { font-size: clamp(48px, 7vw, 80px); padding-right: 48px; }
+  .form :global(label) { display: grid; gap: 6px; font-size: 14px; }
+  .form :global(input), .form :global(select) {
+    font: inherit; color: var(--bone); background: transparent; min-height: 48px;
+    border: 0; border-bottom: 1px solid #4a4843; border-radius: 0; padding: 8px 2px;
+  }
+  .form :global(input:focus-visible), .form :global(select:focus-visible) { outline: none; border-bottom-color: var(--accent); box-shadow: 0 1px 0 var(--accent); }
+  .form :global(select option) { background: var(--night-2); }
+  .form :global(.grid2) { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .form :global(.check) { grid-template-columns: auto 1fr; align-items: start; gap: 12px; color: var(--ash); }
+  .form :global(.check input) { min-height: 0; width: 20px; height: 20px; accent-color: var(--accent); margin-top: 2px; }
+  .form :global([aria-invalid='true']) { border-bottom-color: var(--accent); }
+  .demo { font-size: var(--fs-small); color: var(--ash); border-left: 2px solid var(--accent); padding-left: 12px; }
+  .success :global(.ok-title) { font-size: clamp(48px, 7vw, 80px); color: var(--accent); }
+  .btn { justify-self: start; }
+  @media (max-width: 560px) { .form :global(.grid2) { grid-template-columns: 1fr; } }
+</style>

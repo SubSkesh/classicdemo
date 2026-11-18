@@ -6,3 +6,4 @@ dist/
 .claude/worktrees/
 .claude/settings.local.json
 docs/shots/
+docs/shots-tour/

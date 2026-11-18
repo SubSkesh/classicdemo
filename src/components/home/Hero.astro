@@ -1,0 +1,84 @@
+---
+import Monogram from '../Monogram.astro';
+import { dateParts, eventUrl, type ClassicEvent } from '../../lib/events';
+
+interface Props { next?: ClassicEvent }
+const { next } = Astro.props;
+const np = next ? dateParts(next.data.date) : null;
+---
+<section class="hero" data-hero>
+  <div class="glow" aria-hidden="true" data-glow></div>
+  <div class="stage" aria-hidden="true">
+    <Monogram variant="walls" class="walls" />
+    <div class="slit" data-slit></div>
+  </div>
+  <div class="vignette" aria-hidden="true"></div>
+
+  <div class="copy" data-hero-copy>
+    <div class="main">
+      <h1 class="display" data-hero-title>Classic<br />Club</h1>
+      <p class="sub" data-hero-fade>Club e after hours a Rimini, dal 1987. Due piste, una piscina, la domenica mattina.</p>
+      <p class="entry" data-hero-fade>
+        Circolo privato, ingresso riservato ai soci. 18+, documento obbligatorio.<br />
+        <span lang="en">Members only. 18+ only. ID is required.</span>
+      </p>
+    </div>
+    {next && np && (
+      <a class="next" href={eventUrl(next)} data-hero-fade data-cursor="Apri">
+        <span class="muted">Prossima serata</span>
+        <b>{next.data.title}</b>
+        <span class="muted">{np.long}, {next.data.start}–{next.data.end}</span>
+      </a>
+    )}
+  </div>
+  <span class="scroll" aria-hidden="true" data-hero-fade><i></i>Scorri</span>
+</section>
+
+<style>
+  .hero { position: relative; height: 100svh; min-height: 600px; overflow: clip; isolation: isolate; }
+  .stage, .glow, .vignette { position: absolute; inset: 0; pointer-events: none; }
+  .stage { z-index: -2; display: grid; place-items: center; }
+  .stage > * { grid-area: 1 / 1; }
+  .glow {
+    z-index: -3; left: 50%; top: 44%; width: 70vmax; height: 90vmax; inset: auto; translate: -50% -50%;
+    background: radial-gradient(closest-side, rgb(255 45 111 / 0.22), rgb(180 76 255 / 0.08) 35%, transparent 60%);
+  }
+  .vignette { z-index: -1; background: radial-gradient(120% 90% at 50% 40%, transparent 40%, rgb(0 0 0 / 0.85) 100%); }
+
+  .hero :global(.walls) { width: min(118vw, 1400px); margin-top: -12svh; overflow: visible; color: rgb(242 240 235 / 0.22); }
+  .hero :global(.walls path) { fill: #0d0d0d; stroke: currentColor; stroke-width: 0.35; vector-effect: non-scaling-stroke; }
+  .slit {
+    width: min(9.4vw, 140px); height: min(73vw, 860px); margin-top: -12svh;
+    background: var(--iri); mix-blend-mode: screen; will-change: transform, opacity;
+    mask: linear-gradient(90deg, transparent 0, #000 38%, #000 62%, transparent 100%),
+          linear-gradient(180deg, transparent, #000 12%, #000 80%, transparent);
+    mask-composite: intersect;
+  }
+
+  .copy {
+    position: absolute; left: var(--gutter); right: var(--gutter); bottom: clamp(24px, 5vh, 56px);
+    display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 24px;
+  }
+  h1 { font-size: var(--fs-h1); margin-left: -0.04em; }
+  .sub { margin-top: 18px; max-width: 34ch; font-size: clamp(16px, 1.4vw, 20px); }
+  .entry { margin-top: 10px; color: var(--ash); font-size: var(--fs-small); max-width: 46ch; }
+  .next { display: grid; gap: 4px; border-left: 2px solid var(--accent); padding-left: 16px; max-width: 280px; text-decoration: none; }
+  .next span { font-size: var(--fs-small); }
+  .next b { font-family: var(--display); font-stretch: 75%; font-weight: 800; font-size: 26px; text-transform: uppercase; line-height: 1; margin-block: 4px; }
+  .next:hover b { color: var(--accent); }
+  .scroll {
+    position: absolute; right: var(--gutter); top: 50%; writing-mode: vertical-rl;
+    font-size: 12px; letter-spacing: 0.06em; color: var(--ash); display: flex; align-items: center; gap: 12px;
+  }
+  .scroll i { width: 1px; height: 48px; background: linear-gradient(var(--ash), transparent); animation: drip 2.2s var(--ease-inout) infinite; transform-origin: top; }
+  @keyframes drip { 0% { transform: scaleY(0); } 50% { transform: scaleY(1); } 100% { transform: scaleY(1); opacity: 0; } }
+
+  @media (max-width: 720px) {
+    .hero :global(.walls) { width: 150vw; margin-top: -22svh; }
+    .slit { width: 12vw; height: 93vw; margin-top: -22svh; }
+    .glow { top: 34%; }
+    .copy { grid-template-columns: 1fr; }
+    .scroll { display: none; }
+    h1 { font-size: clamp(92px, 27vw, 140px); }
+  }
+</style>

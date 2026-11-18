@@ -1,0 +1,53 @@
+---
+import MockDialog from '../MockDialog.astro';
+const steps = [
+  { t: 'Compila la pre-adesione online', d: 'Almeno 24 ore prima della serata. Senza pre-tesseramento non si entra.' },
+  { t: 'Passa dal Classic con un documento', d: 'Lo stesso indicato nel modulo, valido e fisico: niente foto sul telefono.' },
+  { t: 'Ritira la tessera', d: 'Quota associativa annuale di 8 €. Vale anche la tessera ARCI.' },
+];
+---
+<section class="member wrap" id="tesseramento" aria-labelledby="member-title">
+  <div class="intro-col">
+    <h2 id="member-title" class="display">Diventa<br />socio</h2>
+    <p class="lead">Il Classic è un circolo privato: si entra con la tessera. La prima volta servono tre passaggi.</p>
+    <button class="btn" type="button" data-dialog-open="dlg-tessera">Inizia il pre-tesseramento</button>
+    <p class="muted small" lang="en">New here? Members only, 18+. Bring a valid ID.</p>
+  </div>
+  <ol class="steps" role="list">
+    {steps.map((s, i) => (
+      <li>
+        <span class="n display" aria-hidden="true">{i + 1}</span>
+        <div><h3>{s.t}</h3><p class="muted">{s.d}</p></div>
+      </li>
+    ))}
+  </ol>
+</section>
+
+<MockDialog id="dlg-tessera" title="Pre-tesseramento" intro="Richiesta di pre-adesione al Classic Club. Completerai l'iscrizione all'ingresso con il documento.">
+  <div class="grid2">
+    <label>Nome<input name="nome" autocomplete="given-name" required /></label>
+    <label>Cognome<input name="cognome" autocomplete="family-name" required /></label>
+  </div>
+  <label>Email<input name="email" type="email" autocomplete="email" required /></label>
+  <label>Data di nascita<input name="nascita" type="date" required /></label>
+  <label class="check"><input type="checkbox" required /> Ho almeno 18 anni e accetto lo statuto del circolo</label>
+  <Fragment slot="success">
+    <p class="ok-title display">Richiesta inviata</p>
+    <p>Ti aspettiamo in Via Feleto 15 con il documento. Questa è una demo: nessun dato è stato inviato.</p>
+  </Fragment>
+</MockDialog>
+
+<style>
+  .member {
+    padding-block: var(--section); border-top: 1px solid var(--line);
+    display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: clamp(40px, 6vw, 120px); align-items: start;
+  }
+  h2 { font-size: var(--fs-h2); margin-bottom: 24px; }
+  .lead { font-size: var(--fs-lead); max-width: 30ch; margin-bottom: 32px; line-height: 1.3; }
+  .small { font-size: var(--fs-small); margin-top: 16px; }
+  .steps { display: grid; gap: 0; border-top: 1px solid var(--line); }
+  .steps li { display: grid; grid-template-columns: 1.6em 1fr; gap: 20px; padding-block: 28px; border-bottom: 1px solid var(--line); align-items: baseline; }
+  .n { font-size: clamp(56px, 6vw, 96px); color: var(--accent); line-height: 0.8; }
+  h3 { font-size: clamp(20px, 1.8vw, 26px); font-weight: 600; margin-bottom: 6px; }
+  @media (max-width: 860px) { .member { grid-template-columns: 1fr; } }
+</style>

@@ -6,6 +6,7 @@ import archivoLatin from '@fontsource-variable/archivo/files/archivo-latin-wdth-
 import { ClientRouter } from 'astro:transitions';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import Cursor from '../components/Cursor.astro';
 
 interface Props {
   page: 'home' | 'serate' | 'evento';
@@ -26,6 +27,18 @@ const fullTitle = title ? `${title} | Classic Club Rimini` : 'Classic Club Rimin
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="preload" href={archivoLatin} as="font" type="font/woff2" crossorigin />
     <title>{fullTitle}</title>
+    <script is:inline>
+      // prima del primo paint: decide se mostrare l'intro e se nascondere gli elementi che GSAP rivelerà
+      (function () {
+        var d = document.documentElement;
+        var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (reduce) { d.classList.add('reduced'); return; }
+        d.classList.add('js-motion');
+        var seen = false;
+        try { seen = sessionStorage.getItem('cc-intro-seen') === '1'; } catch (e) {}
+        if (!seen && location.pathname === '/') d.classList.add('intro');
+      })();
+    </script>
     <ClientRouter fallback="swap" />
     <slot name="head" />
   </head>
@@ -37,8 +50,10 @@ const fullTitle = title ? `${title} | Classic Club Rimini` : 'Classic Club Rimin
       <slot />
     </main>
     <Footer />
+    <Cursor />
     <script>
       import '../scripts/app';
+      import '../scripts/ui';
     </script>
   </body>
 </html>

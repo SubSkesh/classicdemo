@@ -1,0 +1,27 @@
+<div class="cursor" aria-hidden="true" data-cursor-el transition:persist="cursor">
+  <span class="dot"></span>
+  <span class="label" data-cursor-label></span>
+</div>
+
+<style>
+  .cursor { display: none; }
+  :global(html.has-cursor) .cursor {
+    display: block; position: fixed; left: 0; top: 0; z-index: 95; pointer-events: none;
+    opacity: 0; transition: opacity 0.3s;
+  }
+  :global(html.has-cursor) .cursor:global(.is-on) { opacity: 1; }
+  .dot {
+    position: absolute; left: 0; top: 0; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%;
+    background: var(--bone); mix-blend-mode: difference;
+    transition: transform 0.45s var(--ease-out), background 0.3s;
+  }
+  .label {
+    position: absolute; left: 0; top: 0; translate: -50% -50%;
+    width: 88px; height: 88px; border-radius: 50%; display: grid; place-items: center;
+    background: var(--accent); color: var(--night); font-weight: 600; font-size: 14px;
+    transform: scale(0); transition: transform 0.45s var(--ease-out);
+  }
+  .cursor:global(.is-link) .dot { transform: scale(3.2); }
+  .cursor:global(.is-label) .dot { transform: scale(0); }
+  .cursor:global(.is-label) .label { transform: scale(1); }
+</style>

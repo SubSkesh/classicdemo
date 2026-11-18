@@ -1,0 +1,35 @@
+---
+import Monogram from '../Monogram.astro';
+
+const rows = [
+  { words: ['Buongiorno Classic', 'After', 'Dal 1987', 'Rimini'], dir: -1, speed: 1, size: 'big' },
+  { words: ['Due piste', 'Piscina e giardino', 'Circolo ARCI', '18+ only'], dir: 1, speed: 0.6, size: 'small' },
+];
+---
+<section class="marquee" aria-label="Classic Club: Buongiorno Classic, after, dal 1987, Rimini. Due piste, piscina e giardino, circolo ARCI, solo maggiorenni.">
+  {rows.map((r) => (
+    <div class={`row ${r.size}`} data-marquee data-dir={r.dir} data-speed={r.speed} aria-hidden="true">
+      {[0, 1].map(() => (
+        <div class="track">
+          {r.words.map((w) => (
+            <>
+              <span>{w}</span>
+              <Monogram class="sep" />
+            </>
+          ))}
+        </div>
+      ))}
+    </div>
+  ))}
+</section>
+
+<style>
+  .marquee { padding-block: clamp(40px, 7vw, 96px); overflow: clip; border-block: 1px solid var(--line); }
+  .row { display: flex; width: max-content; will-change: transform; }
+  .track { display: flex; align-items: center; flex: none; }
+  .track span { font-family: var(--display); font-stretch: 62%; font-weight: 850; text-transform: uppercase; line-height: 1; white-space: nowrap; }
+  .track :global(.sep) { flex: none; height: 0.55em; width: auto; margin-inline: 0.45em; color: var(--accent); }
+  .big { font-size: clamp(64px, 12vw, 190px); }
+  .small { font-size: clamp(28px, 4vw, 60px); color: var(--ash); margin-top: 0.3em; }
+  .small .track :global(.sep) { color: var(--ash); }
+</style>

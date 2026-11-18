@@ -1,0 +1,22 @@
+---
+import Monogram from '../Monogram.astro';
+---
+<!--
+  Intro (max ~1,8 s): il monogramma si disegna, la barra centrale si accende e diventa la fessura della hero.
+  Visibile solo al primo arrivo sulla home nella sessione e mai con prefers-reduced-motion
+  (la classe html.intro viene messa da uno script inline nel <head>, prima del primo paint).
+-->
+<div class="intro" aria-hidden="true" data-intro>
+  <Monogram variant="stroke" class="intro-mark" />
+</div>
+
+<style>
+  .intro { display: none; }
+  :global(html.intro) .intro {
+    display: grid; place-items: center;
+    position: fixed; inset: 0; z-index: 80;
+    background: var(--night);
+  }
+  .intro :global(.intro-mark) { width: min(42vw, 260px); color: var(--bone); overflow: visible; }
+  .intro :global(.m-bar) { stroke: var(--accent); }
+</style>
