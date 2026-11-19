@@ -7,7 +7,8 @@
     "dev": "astro dev",
     "build": "astro check && astro build",
     "preview": "astro preview",
-    "shots": "node scripts/shots.mjs"
+    "shots": "node scripts/shots.mjs",
+    "deploy": "astro build && npx -y wrangler@4 pages deploy dist --project-name classic-demo --branch main"
   },
   "dependencies": {
     "@fontsource-variable/archivo": "^5.3.0",
