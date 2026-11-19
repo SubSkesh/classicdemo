@@ -8,3 +8,4 @@ dist/
 docs/shots/
 docs/shots-tour/
 docs/shots-phone/
+.wrangler/
