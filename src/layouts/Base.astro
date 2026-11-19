@@ -37,15 +37,11 @@ const pageTransition = { forwards: slit, backwards: slit };
     <link rel="preload" href={archivoLatin} as="font" type="font/woff2" crossorigin />
     <title>{fullTitle}</title>
     <script is:inline>
-      // prima del primo paint: decide se mostrare l'intro e se nascondere gli elementi che GSAP rivelerà
+      // prima del primo paint: con movimento attivo nasconde gli elementi che GSAP rivelerà (failsafe CSS a 3 s)
       (function () {
         var d = document.documentElement;
-        var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        if (reduce) { d.classList.add('reduced'); return; }
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { d.classList.add('reduced'); return; }
         d.classList.add('js-motion');
-        var seen = false;
-        try { seen = sessionStorage.getItem('cc-intro-seen') === '1'; } catch (e) {}
-        if (!seen && location.pathname === '/') d.classList.add('intro');
       })();
     </script>
     <ClientRouter fallback="swap" />

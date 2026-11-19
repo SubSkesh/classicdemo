@@ -19,10 +19,21 @@ for (const route of routes) {
     const errors = [];
     page.on('pageerror', (e) => errors.push(e.message));
     page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
+    const slug = route.replace(/\//g, '_').replace(/^_|_$/g, '') || 'home';
+    if (process.env.FRAMES) {
+      // fotogrammi a tempi fissi dal caricamento (per controllare le entrate)
+      await page.goto(base + route, { waitUntil: 'commit' });
+      const t0 = Date.now();
+      for (const ms of process.env.FRAMES.split(',').map(Number)) {
+        await page.waitForTimeout(Math.max(0, ms - (Date.now() - t0)));
+        await page.screenshot({ path: `${out}/${slug}-${name}-t${String(ms).padStart(4, '0')}.png` });
+      }
+      await ctx.close();
+      continue;
+    }
     await page.goto(base + route, { waitUntil: 'networkidle' });
     await page.evaluate(() => document.fonts.ready);
     await page.waitForTimeout(Number(process.env.WAIT ?? 2600));
-    const slug = route.replace(/\//g, '_').replace(/^_|_$/g, '') || 'home';
     if (process.env.TOUR) {
       // scorre con la rotella come un utente (Lenis + ScrollTrigger reagiscono davvero) e scatta a ogni passo
       const steps = Number(process.env.TOUR);

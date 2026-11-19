@@ -1,24 +1,82 @@
 ---
-import Monogram from '../Monogram.astro';
 import { dateParts, eventUrl, type ClassicEvent } from '../../lib/events';
 
 interface Props { next?: ClassicEvent }
 const { next } = Astro.props;
 const np = next ? dateParts(next.data.date) : null;
----
-<section class="hero" data-hero>
-  <div class="glow" aria-hidden="true" data-glow></div>
-  <div class="stage" aria-hidden="true">
-    <Monogram variant="walls" class="walls" />
-    <div class="slit" data-slit></div>
-  </div>
-  <div class="vignette" aria-hidden="true"></div>
 
-  <div class="copy" data-hero-copy>
-    <div class="main">
-      <h1 class="display" data-hero-title>Classic<br />Club</h1>
-      <p class="sub" data-hero-fade>Club e after hours a Rimini, dal 1987. Due piste, una piscina, la domenica mattina.</p>
-      <p class="entry" data-hero-fade>
+// geometria del monogramma (stessa del logo originale, ricostruita in vettoriale)
+const L = 'M90 10H0v119h90v-27H27V37h63z';
+const R = 'M135 10h90v119h-90v-27h63V37h-63z';
+const walls = [
+  { side: 'l', d: L },
+  { side: 'r', d: R },
+];
+---
+<section class="hero" data-hero aria-labelledby="hero-title">
+  <!-- atmosfera: foschia CSS (sempre), fumo WebGL (solo desktop), fascio di luce -->
+  <div class="atmo" aria-hidden="true" data-hero-hide>
+    <div class="haze haze-a" data-haze></div>
+    <div class="haze haze-b" data-haze></div>
+    <canvas class="smoke" data-smoke></canvas>
+    <div class="beam" data-beam></div>
+    <div class="vignette"></div>
+  </div>
+
+  <!-- l'insegna: due C scure con il bordo acceso dalla luce, la barra è la sorgente -->
+  <div class="sign" aria-hidden="true" data-sign data-hero-hide>
+    <div class="bloom" data-bloom></div>
+    <svg class="mono" viewBox="-14 -14 253 167">
+      <defs>
+        <linearGradient id="rim-l" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="90" y2="0">
+          <stop offset="0" stop-color="#F2F0EB" stop-opacity="0.32" />
+          <stop offset="0.55" stop-color="#B44CFF" stop-opacity="0.9" />
+          <stop offset="1" stop-color="#FF2D6F" />
+        </linearGradient>
+        <linearGradient id="rim-r" gradientUnits="userSpaceOnUse" x1="225" y1="0" x2="135" y2="0">
+          <stop offset="0" stop-color="#F2F0EB" stop-opacity="0.32" />
+          <stop offset="0.55" stop-color="#B44CFF" stop-opacity="0.9" />
+          <stop offset="1" stop-color="#FF2D6F" />
+        </linearGradient>
+        <linearGradient id="fill-l" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="90" y2="0">
+          <stop offset="0" stop-color="#070707" />
+          <stop offset="1" stop-color="#17141a" />
+        </linearGradient>
+        <linearGradient id="fill-r" gradientUnits="userSpaceOnUse" x1="225" y1="0" x2="135" y2="0">
+          <stop offset="0" stop-color="#070707" />
+          <stop offset="1" stop-color="#17141a" />
+        </linearGradient>
+        <linearGradient id="bar-grad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#FF2D6F" />
+          <stop offset="0.45" stop-color="#F7E9FF" />
+          <stop offset="0.6" stop-color="#E9D9FF" />
+          <stop offset="1" stop-color="#5CE1E6" />
+        </linearGradient>
+      </defs>
+      {walls.map((w) => (
+        <g class="wall" data-wall={w.side}>
+          <path class="fill" d={w.d} fill={`url(#fill-${w.side})`} />
+          <path class="glow2" d={w.d} stroke={`url(#rim-${w.side})`} data-rim />
+          <path class="glow1" d={w.d} stroke={`url(#rim-${w.side})`} data-rim />
+          <path class="rim" d={w.d} stroke={`url(#rim-${w.side})`} data-rim />
+        </g>
+      ))}
+      <g class="bar" data-bar>
+        <rect x="99" y="0" width="27" height="139" fill="url(#bar-grad)" />
+        <rect class="hot" x="109" y="6" width="7" height="127" fill="#fff" />
+      </g>
+    </svg>
+  </div>
+
+  <h1 id="hero-title" class="title display" aria-label="Classic Club" data-hero-hide>
+    <span class="w w-l" aria-hidden="true"><span class="w-in" data-word="l">Classic</span></span>
+    <span class="w w-r" aria-hidden="true"><span class="w-in" data-word="r">Club</span></span>
+  </h1>
+
+  <div class="copy" data-hero-copy data-hero-hide>
+    <div class="about" data-hero-fade>
+      <p class="sub">Club e after hours a Rimini, dal 1987. Due piste, una piscina, la domenica mattina.</p>
+      <p class="entry">
         Circolo privato, ingresso riservato ai soci. 18+, documento obbligatorio.<br />
         <span lang="en">Members only. 18+ only. ID is required.</span>
       </p>
@@ -31,40 +89,70 @@ const np = next ? dateParts(next.data.date) : null;
       </a>
     )}
   </div>
-  <span class="scroll" aria-hidden="true" data-hero-fade><i></i>Scorri</span>
+  <span class="scroll" aria-hidden="true" data-hero-fade data-hero-hide><i></i>Scorri</span>
 </section>
 
 <style>
-  .hero { position: relative; height: 100svh; min-height: 600px; overflow: clip; isolation: isolate; }
-  .stage, .glow, .vignette { position: absolute; inset: 0; pointer-events: none; }
-  .stage { z-index: -2; display: grid; place-items: center; }
-  .stage > * { grid-area: 1 / 1; }
-  .glow {
-    z-index: -3; left: 50%; top: 44%; width: 70vmax; height: 90vmax; inset: auto; translate: -50% -50%;
-    background: radial-gradient(closest-side, rgb(255 45 111 / 0.22), rgb(180 76 255 / 0.08) 35%, transparent 60%);
-  }
-  .vignette { z-index: -1; background: radial-gradient(120% 90% at 50% 40%, transparent 40%, rgb(0 0 0 / 0.85) 100%); }
-
-  .hero :global(.walls) { width: min(118vw, 1400px); margin-top: -12svh; overflow: visible; color: rgb(242 240 235 / 0.22); }
-  .hero :global(.walls path) { fill: #0d0d0d; stroke: currentColor; stroke-width: 0.35; vector-effect: non-scaling-stroke; }
-  .slit {
-    width: min(9.4vw, 140px); height: min(73vw, 860px); margin-top: -12svh;
-    background: var(--iri); mix-blend-mode: screen; will-change: transform, opacity;
-    mask: linear-gradient(90deg, transparent 0, #000 38%, #000 62%, transparent 100%),
-          linear-gradient(180deg, transparent, #000 12%, #000 80%, transparent);
-    mask-composite: intersect;
+  .hero {
+    position: relative; height: 100svh; min-height: 620px; overflow: clip; isolation: isolate;
+    display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: 1fr auto auto 1.15fr auto; justify-items: center;
+    padding: 84px var(--gutter) clamp(20px, 4vh, 44px);
+    --beam-w: clamp(22px, 2.6vw, 44px);
   }
 
-  .copy {
-    position: absolute; left: var(--gutter); right: var(--gutter); bottom: clamp(24px, 5vh, 56px);
-    display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 24px;
+  /* ---------- atmosfera ---------- */
+  .atmo { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+  .haze { position: absolute; left: 50%; top: 40%; translate: -50% -50%; border-radius: 50%; will-change: transform; }
+  .haze-a {
+    width: 130vmax; height: 110vmax;
+    background: radial-gradient(closest-side, rgb(255 45 111 / 0.30), rgb(180 76 255 / 0.13) 34%, rgb(180 76 255 / 0.04) 55%, transparent 70%);
   }
-  h1 { font-size: var(--fs-h1); margin-left: -0.04em; }
-  .sub { margin-top: 18px; max-width: 34ch; font-size: clamp(16px, 1.4vw, 20px); }
-  .entry { margin-top: 10px; color: var(--ash); font-size: var(--fs-small); max-width: 46ch; }
-  .next { display: grid; gap: 4px; border-left: 2px solid var(--accent); padding-left: 16px; max-width: 280px; text-decoration: none; }
+  .haze-b {
+    top: 78%; width: 90vmax; height: 50vmax;
+    background: radial-gradient(closest-side, rgb(92 225 230 / 0.14), transparent 70%);
+  }
+  .smoke { position: absolute; inset: 0; width: 100%; height: 100%; mix-blend-mode: screen; opacity: 0; }
+  .beam {
+    position: absolute; left: 50%; top: 0; bottom: 0; width: var(--beam-w); translate: -50% 0;
+    background: linear-gradient(180deg, transparent 0%, rgb(255 45 111 / 0.55) 18%, rgb(214 170 255 / 0.75) 42%, rgb(180 76 255 / 0.55) 62%, rgb(92 225 230 / 0.45) 84%, transparent 100%);
+    mask: linear-gradient(90deg, transparent, #000 35%, #000 65%, transparent);
+    mix-blend-mode: screen; transform-origin: 50% 40%; will-change: transform, opacity;
+  }
+  .vignette { position: absolute; inset: 0; background: radial-gradient(110% 85% at 50% 42%, transparent 45%, rgb(0 0 0 / 0.88) 100%); }
+
+  /* ---------- insegna ---------- */
+  .sign { grid-row: 2; position: relative; width: min(40vw, 64svh); }
+  .mono { width: 100%; overflow: visible; }
+  .mono :global(.wall) { will-change: transform; }
+  .mono :global([data-rim]) { fill: none; stroke-linejoin: miter; }
+  .mono :global(.rim) { stroke-width: 1; }
+  .mono :global(.glow1) { stroke-width: 3.6; opacity: 0.3; }
+  .mono :global(.glow2) { stroke-width: 10; opacity: 0.1; }
+  .mono :global(.hot) { opacity: 0.8; }
+  .bloom {
+    position: absolute; left: 50%; top: 50%; width: 46%; height: 150%; translate: -50% -50%;
+    background: radial-gradient(closest-side, rgb(247 233 255 / 0.5), rgb(255 45 111 / 0.22) 38%, rgb(180 76 255 / 0.1) 62%, transparent 78%);
+    mix-blend-mode: screen; pointer-events: none; will-change: transform, opacity;
+  }
+
+  /* ---------- titolo: CLASSIC | CLUB separati dalla luce ---------- */
+  .title {
+    grid-row: 3; width: 100%; margin-top: clamp(14px, 3.2vh, 40px);
+    display: grid; grid-template-columns: minmax(0, 1fr) var(--beam-w) minmax(0, 1fr); align-items: end; min-width: 0;
+    font-size: min(14.4vw, 24svh); line-height: 0.82;
+  }
+  .w { display: block; overflow-x: clip; overflow-y: visible; max-width: 100%; }
+  .w-l { grid-column: 1; justify-self: end; }
+  .w-r { grid-column: 3; justify-self: start; }
+  .w-in { display: block; padding-inline: 0.02em; will-change: transform; }
+
+  /* ---------- testo in basso ---------- */
+  .copy { grid-row: 5; width: 100%; display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 24px; }
+  .sub { max-width: 36ch; font-size: clamp(16px, 1.3vw, 19px); }
+  .entry { margin-top: 8px; color: var(--ash); font-size: var(--fs-small); max-width: 48ch; }
+  .next { display: grid; gap: 4px; border-left: 2px solid var(--accent); padding-left: 16px; max-width: 290px; text-decoration: none; }
   .next span { font-size: var(--fs-small); }
-  .next b { font-family: var(--display); font-stretch: 75%; font-weight: 800; font-size: 26px; text-transform: uppercase; line-height: 1; margin-block: 4px; }
+  .next b { font-family: var(--display); font-stretch: 75%; font-weight: 800; font-size: 26px; text-transform: uppercase; line-height: 1; margin-block: 4px; transition: color 0.3s; }
   .next:hover b { color: var(--accent); }
   .scroll {
     position: absolute; right: var(--gutter); top: 50%; writing-mode: vertical-rl;
@@ -73,12 +161,17 @@ const np = next ? dateParts(next.data.date) : null;
   .scroll i { width: 1px; height: 48px; background: linear-gradient(var(--ash), transparent); animation: drip 2.2s var(--ease-inout) infinite; transform-origin: top; }
   @keyframes drip { 0% { transform: scaleY(0); } 50% { transform: scaleY(1); } 100% { transform: scaleY(1); opacity: 0; } }
 
-  @media (max-width: 720px) {
-    .hero :global(.walls) { width: 150vw; margin-top: -22svh; }
-    .slit { width: 12vw; height: 93vw; margin-top: -22svh; }
-    .glow { top: 34%; }
-    .copy { grid-template-columns: 1fr; }
+  /* la foschia CSS respira da sola anche senza JS (e si ferma con reduced motion) */
+  .haze-a { animation: breathe 9s ease-in-out infinite alternate; }
+  .haze-b { animation: breathe 13s ease-in-out infinite alternate-reverse; }
+  @keyframes breathe { from { transform: scale(1) translateY(0); } to { transform: scale(1.12) translateY(-3%); } }
+
+  @media (max-width: 760px) {
+    .hero { grid-template-rows: 1fr auto auto 1fr auto; padding-top: 76px; }
+    .sign { width: min(74vw, 40svh); }
+    .title { grid-template-columns: minmax(0, 1fr); font-size: min(27.5vw, 17svh); justify-items: center; row-gap: 0.04em; }
+    .w-l, .w-r { grid-column: 1; justify-self: center; }
+    .copy { grid-template-columns: 1fr; gap: 18px; }
     .scroll { display: none; }
-    h1 { font-size: clamp(92px, 27vw, 140px); }
   }
 </style>

@@ -112,8 +112,7 @@ ul[role='list'], ol[role='list'] { list-style: none; padding: 0; }
 }
 
 /* elementi rivelati da GSAP: nascosti solo se JS e movimento sono attivi, con failsafe a 3 s */
-html.js-motion [data-hero-copy],
-html.js-motion .hero .stage { opacity: 0; animation: failsafe 0.01s 3s forwards; }
+html.js-motion [data-hero-hide] { opacity: 0; animation: failsafe 0.01s 3s forwards; }
 @keyframes failsafe { to { opacity: 1; } }
 
 /* cursore personalizzato: sostituisce quello di sistema solo con mouse */
