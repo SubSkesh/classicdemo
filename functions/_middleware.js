@@ -139,9 +139,9 @@ function fromOcsw(request, form) {
 }
 
 // the draft lives on the OC Software subdomain; the default pages.dev address forwards there.
-// Preview deployments (<hash>.classic-demo.pages.dev) stay reachable for testing.
+// Preview deployments (<hash>.classic-demo-cpm.pages.dev) stay reachable for testing.
 const CANONICAL = 'classic.ocsw.it';
-const LEGACY = 'classic-demo.pages.dev';
+const LEGACY = 'classic-demo-cpm.pages.dev';
 
 export async function onRequest({ request, env, next }) {
   const url = new URL(request.url);
