@@ -12,7 +12,7 @@ const init: PageInit = (root) => {
   if (!reduce) {
     const h1 = root.querySelector<HTMLElement>('[data-split]');
     if (h1) {
-      const s = SplitText.create(h1, { type: 'chars', mask: 'chars' });
+      const s = SplitText.create(h1, { type: 'words,chars', mask: 'chars' });
       gsap.from(s.chars, { yPercent: 105, duration: 1.1, stagger: 0.04, delay: 0.15 });
       cleanups.push(() => s.revert());
     }

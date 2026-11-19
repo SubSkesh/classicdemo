@@ -8,10 +8,14 @@ const routes = paths.length ? paths : ['/', '/serate/', '/serate/buongiorno-clas
 mkdirSync(out, { recursive: true });
 
 const browser = await chromium.launch({ channel: 'chrome' });
-const viewports = [
-  ['mobile', { width: 390, height: 844 }, { isMobile: true, hasTouch: true, deviceScaleFactor: 2 }],
-  ['desktop', { width: 1440, height: 900 }, { deviceScaleFactor: 1 }],
-];
+// SIZES=360x740,430x932 → solo quei telefoni (più "landscape" con LAND=1)
+const phone = { isMobile: true, hasTouch: true, deviceScaleFactor: 2 };
+const viewports = process.env.SIZES
+  ? process.env.SIZES.split(',').map((s) => { const [w, h] = s.split('x').map(Number); return [`m${w}x${h}`, { width: w, height: h }, phone]; })
+  : [
+      ['mobile', { width: 390, height: 844 }, phone],
+      ['desktop', { width: 1440, height: 900 }, { deviceScaleFactor: 1 }],
+    ];
 for (const route of routes) {
   for (const [name, viewport, opts] of viewports) {
     const ctx = await browser.newContext({ viewport, ...opts, reducedMotion: process.env.REDUCED ? 'reduce' : 'no-preference' });

@@ -1,41 +1,61 @@
 ---
 import Picture from '../Picture.astro';
 
-// sfere: foto già ritagliate in tondo dal sito del Classic (piccole, quindi restano medie)
-const orbs = [
-  { name: 'photo-pool-round', alt: 'La piscina illuminata di notte, con le persone intorno', label: 'Piscina e giardino', cls: 'o1', size: '300px' },
-  { name: 'photo-floor-round', alt: 'Una sala del Classic piena, sotto le luci rosse', label: 'La sala', cls: 'o2', size: '251px' },
-  { name: 'photo-performer-round', alt: 'Performer sospeso tra le luci blu del palco', label: 'Sul palco', cls: 'o3', size: '313px' },
+// "monitor" in loop: tre fotogrammi del Classic che si alternano a tagli secchi, a tempo
+const loops = [
+  { name: 'loop-pool', alt: 'La piscina illuminata di notte, con le persone intorno', label: 'Piscina e giardino' },
+  { name: 'loop-sala', alt: 'Una sala del Classic piena, sotto le luci rosse', label: 'La sala' },
+  { name: 'loop-palco', alt: 'Performer sospeso tra le luci blu del palco', label: 'Sul palco' },
 ];
-const shots = [
-  { name: 'photo-crowd', alt: 'La pista del Classic piena, luci calde e mani alzate verso la consolle', title: 'La pista', line: 'Due piste, un solo ritmo.', cls: 's1', sizes: '(min-width: 1024px) 48vw, 160vw' },
-  { name: 'photo-aerial', alt: 'Performer al cerchio aereo sospesa nel fumo viola', title: 'Performance', line: 'Artisti, voci e performer dal vivo.', cls: 's2', sizes: '(min-width: 1024px) 40vw, 140vw' },
+// pannelli: le foto grandi si compongono a barre, come un equalizzatore
+const panels = [
+  { name: 'photo-crowd', alt: 'La pista del Classic piena, luci calde e mani alzate verso la consolle', title: 'La pista', line: 'Due piste, un solo ritmo.', cls: 'p1', sizes: '(min-width: 1024px) 48vw, 150vw' },
+  { name: 'photo-aerial', alt: 'Performer al cerchio aereo sospesa nel fumo viola', title: 'Performance', line: 'Artisti, voci e performer dal vivo.', cls: 'p2', sizes: '(min-width: 1024px) 40vw, 130vw' },
 ];
+// analizzatore di spettro: altezze di partenza deterministiche (servono anche senza JS / reduced motion)
+const SPECTRUM = 28;
+const levels = Array.from({ length: SPECTRUM }, (_, i) => 0.25 + 0.6 * Math.abs(Math.sin(i * 1.7) * Math.cos(i * 0.43)));
 ---
 <section class="gallery" aria-labelledby="gallery-title" data-gallery>
   <div class="scene" data-scene>
     <h2 id="gallery-title" class="g-title display" data-eq>La notte<br />al Classic</h2>
 
-    <div class="orbs" data-orbs>
-      {orbs.map((o) => (
-        <figure class={`orb ${o.cls}`} data-orb>
-          <div class="orb-body" data-orb-body>
-            <span class="halo" aria-hidden="true"></span>
-            <div class="orb-img"><Picture name={o.name} alt={o.alt} sizes={o.size} /></div>
+    <figure class="monitor" data-monitor>
+      <div class="crt" data-crt>
+        {loops.map((l, i) => (
+          <div class:list={['frame', { on: i === 0 }]} data-frame data-label={l.label}>
+            <Picture name={l.name} alt={l.alt} sizes="240px" />
           </div>
-          <figcaption data-orb-cap>{o.label}</figcaption>
-        </figure>
-      ))}
-    </div>
+        ))}
+        <span class="scan" aria-hidden="true"></span>
+        <span class="flash" aria-hidden="true" data-flash></span>
+      </div>
+      <figcaption>
+        <span class="rec" aria-hidden="true"></span>
+        <span class="lbl" aria-hidden="true" data-frame-label>{loops[0].label}</span>
+        <span class="sr-only">Loop di tre immagini: {loops.map((l) => l.label).join(', ')}.</span>
+      </figcaption>
+    </figure>
 
-    {shots.map((s) => (
-      <figure class={`shot ${s.cls}`} data-shot>
-        <div class="mask" data-shot-mask>
-          <div class="inner" data-shot-inner><Picture name={s.name} alt={s.alt} sizes={s.sizes} /></div>
+    <div class="spectrum" aria-hidden="true" data-spectrum>
+      {levels.map((l) => <i style={`--l:${l.toFixed(3)}`}></i>)}
+    </div>
+    <p class="hint" aria-hidden="true">
+      <span class="h-mouse">Passa con il mouse sulle foto. Clic per il drop, sul monitor per lo strobo.</span>
+      <span class="h-touch">Tocca le foto per il drop, il monitor per cambiare scena.</span>
+    </p>
+
+    {panels.map((p) => (
+      <figure class={`panel ${p.cls}`} data-panel>
+        <div class="screen" data-screen>
+          <Picture name={p.name} alt={p.alt} sizes={p.sizes} class="src" />
+          <div class="bars" aria-hidden="true" data-bars></div>
+          <span class="cue" aria-hidden="true" data-cue></span>
+          <span class="flash" aria-hidden="true" data-flash></span>
         </div>
         <figcaption>
-          <b class="display" data-shot-title>{s.title}</b>
-          <span data-shot-line>{s.line}</span>
+          <b class="display" data-panel-title>{p.title}</b>
+          <span data-panel-line>{p.line}</span>
         </figcaption>
       </figure>
     ))}
@@ -44,69 +64,93 @@ const shots = [
 
 <style>
   .gallery { position: relative; }
-  .scene { position: relative; padding: var(--section) var(--gutter); }
-
+  .scene { position: relative; padding: var(--section) var(--gutter); display: grid; gap: 28px; }
   .g-title { font-size: clamp(64px, 9vw, 150px); position: relative; z-index: 3; }
-  .g-title :global(.ch) { will-change: transform; }
 
-  /* ---------- sfere ---------- */
-  .orbs { position: relative; height: 118vw; max-height: 700px; margin-block: 40px 8px; }
-  .orb { position: absolute; margin: 0; will-change: transform; }
-  .orb-body { position: relative; }
-  .halo {
-    position: absolute; inset: -22%; border-radius: 50%; pointer-events: none;
-    background: radial-gradient(closest-side, rgb(255 45 111 / 0.38), rgb(180 76 255 / 0.16) 55%, transparent 72%);
-    mix-blend-mode: screen;
+  /* ---------- monitor in loop ---------- */
+  .monitor { margin: 0; width: min(62vw, 300px); position: relative; z-index: 3; }
+  .crt {
+    position: relative; aspect-ratio: 1; overflow: hidden; border-radius: 10px; background: #000;
+    box-shadow: 0 0 0 1px rgb(242 240 235 / 0.16), 0 0 60px rgb(255 45 111 / 0.18);
+    transform-origin: 50% 50%;
   }
-  .orb-body::after {
-    content: ''; position: absolute; inset: -9px; border-radius: 50%; pointer-events: none;
-    border: 1px solid rgb(242 240 235 / 0.22);
+  .frame { position: absolute; inset: 0; opacity: 0; }
+  .frame.on { opacity: 1; }
+  .frame :global(picture), .frame :global(img) { width: 100%; height: 100%; object-fit: cover; }
+  .frame :global(img) { filter: grayscale(1) contrast(1.35) brightness(0.95); }
+  .crt::after {
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(160deg, var(--accent), #3b0f5c 60%, #b44cff); mix-blend-mode: color; opacity: 0.75;
   }
-  .orb-img { position: relative; border-radius: 50%; overflow: hidden; aspect-ratio: 1; }
-  .orb-img :global(picture), .orb-img :global(img) { width: 100%; height: 100%; object-fit: cover; }
-  /* duotono che scorre lentamente: le foto di anni diversi parlano la stessa lingua */
-  .orb-img::after {
-    content: ''; position: absolute; inset: 0; border-radius: 50%;
-    background: linear-gradient(160deg, var(--accent), #3b0f5c 50%, #b44cff) 0 0 / 200% 200%;
-    mix-blend-mode: color; opacity: 0.85; animation: duo 12s ease-in-out infinite alternate;
+  .scan {
+    position: absolute; inset: 0; z-index: 2; pointer-events: none;
+    background: repeating-linear-gradient(0deg, rgb(0 0 0 / 0.38) 0 1px, transparent 1px 3px),
+                radial-gradient(120% 120% at 50% 50%, transparent 55%, rgb(0 0 0 / 0.65));
+    animation: roll 6s linear infinite;
   }
-  @keyframes duo { to { background-position: 100% 100%; } }
-  .orb figcaption {
-    position: absolute; left: 50%; bottom: -14px; translate: -50% 100%; white-space: nowrap;
-    font-size: 13px; color: var(--bone); padding: 6px 12px; border-radius: var(--radius-pill);
-    background: rgb(10 10 10 / 0.6); border: 1px solid var(--line); backdrop-filter: blur(6px);
-  }
-  .o1 { width: 54vw; left: 1vw; top: 0; }
-  .o2 { width: 38vw; right: 2vw; top: 30vw; }
-  .o3 { width: 34vw; left: 16vw; top: 72vw; }
+  @keyframes roll { to { background-position: 0 60px, 0 0; } }
+  .flash { position: absolute; inset: 0; z-index: 3; background: var(--bone); opacity: 0; pointer-events: none; mix-blend-mode: screen; }
+  .monitor figcaption { display: flex; align-items: center; gap: 10px; margin-top: 12px; font-size: 14px; }
+  .rec { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); animation: blink 0.94s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: 0.2; } }
+  .lbl { font-family: var(--display); font-stretch: 75%; font-weight: 700; text-transform: uppercase; font-size: 18px; letter-spacing: 0.02em; }
 
-  /* ---------- foto rettangolari ---------- */
-  .shot { margin: 0; position: relative; z-index: 2; }
-  .shot + .shot { margin-top: 56px; }
-  .orbs + .shot { margin-top: 72px; }
-  .mask { overflow: hidden; border-radius: 3px; aspect-ratio: 4 / 3; }
-  .inner { height: 100%; will-change: transform; }
-  .inner :global(picture), .inner :global(img) { width: 100%; height: 100%; object-fit: cover; }
-  .shot figcaption { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin-top: 14px; }
-  .shot b { font-size: clamp(34px, 3.6vw, 60px); font-stretch: 62%; line-height: 0.9; }
-  .shot span { color: var(--ash); }
+  /* ---------- spettro ---------- */
+  .spectrum { display: flex; align-items: flex-end; gap: 3px; height: 72px; position: relative; z-index: 3; }
+  .spectrum i {
+    flex: 1; height: 100%; transform-origin: 50% 100%; transform: scaleY(var(--l));
+    background: linear-gradient(to top, var(--bone) 0 62%, var(--accent) 62% 100%);
+    mask: repeating-linear-gradient(to top, #000 0 4px, transparent 4px 6px);
+    opacity: 0.85; will-change: transform;
+  }
+
+  .hint { font-size: 13px; color: var(--ash); position: relative; z-index: 3; }
+  .hint .h-mouse { display: none; }
+  @media (hover: hover) and (pointer: fine) {
+    .hint .h-mouse { display: inline; }
+    .hint .h-touch { display: none; }
+  }
+  :global(html.reduced) .hint { display: none; }
+
+  /* ---------- pannelli a barre ---------- */
+  .panel { margin: 0; position: relative; z-index: 2; }
+  .screen { position: relative; overflow: hidden; border-radius: 3px; aspect-ratio: 3 / 2; touch-action: manipulation; }
+  .screen :global(.src), .screen :global(.src img) { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .screen:global(.bars-on) :global(.src) { opacity: 0; }
+  .bars { position: absolute; inset: 0; display: flex; }
+  .bars :global(.bar) { position: relative; flex: 1 1 0; height: 100%; overflow: hidden; will-change: transform; }
+  .bars :global(.slice) { position: absolute; inset: 0; will-change: transform; }
+  .bars :global(.slice img) { position: absolute; top: 0; height: 100%; max-width: none; object-fit: cover; }
+  .bars :global(.bar)::after { content: ''; position: absolute; top: 0; bottom: 0; right: 0; width: 1px; background: rgb(0 0 0 / 0.55); }
+  .cue {
+    position: absolute; top: 0; bottom: 0; left: 0; width: 2px; margin-left: -1px; z-index: 2; pointer-events: none; opacity: 0;
+    background: var(--bone); box-shadow: 0 0 12px 2px rgb(242 240 235 / 0.6), 0 0 40px 6px rgb(255 45 111 / 0.35);
+  }
+  .panel figcaption { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin-top: 14px; }
+  .panel b { font-size: clamp(34px, 3.6vw, 60px); font-stretch: 62%; line-height: 0.9; }
+  .panel figcaption span { color: var(--ash); }
+
+  /* ---------- smartphone e tablet: monitor e spettro affiancati, pannelli a tutta larghezza ---------- */
+  @media (max-width: 1023px) {
+    .scene { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 20px; row-gap: 32px; }
+    .g-title, .panel, .hint { grid-column: 1 / -1; }
+    .hint { margin-top: -12px; }
+    .monitor { width: 100%; }
+    .spectrum { height: auto; min-height: 120px; align-self: stretch; margin-bottom: 32px; }
+  }
 
   /* ---------- desktop: una sola scena composta, che GSAP fissa e coreografa ---------- */
   @media (min-width: 1024px) {
-    .scene { height: 100svh; min-height: 680px; padding: 0; }
+    .scene { display: block; height: 100svh; min-height: 680px; padding: 0; }
     .g-title { position: absolute; left: var(--gutter); top: 12svh; font-size: min(9vw, 15svh); }
-    .orbs { position: absolute; inset: 0; height: auto; max-height: none; margin: 0; z-index: 4; pointer-events: none; }
-    .orb { pointer-events: auto; }
-    .o1 { width: min(15vw, 30svh); left: auto; right: 6vw; top: 60svh; }
-    .o2 { width: min(11vw, 22svh); left: 51vw; right: auto; top: 67svh; }
-    .o3 { width: min(9vw, 17svh); left: 37.5vw; top: 6svh; }
-    .o3 figcaption { left: 100%; bottom: 50%; translate: 14px 50%; }
-    .shot { position: absolute; }
-    .shot + .shot, .orbs + .shot { margin-top: 0; }
-    .s1 { right: 5vw; top: 12svh; width: min(47vw, 76svh); }
-    .s1 .mask { aspect-ratio: 2 / 1; }
-    .s2 { left: 7vw; top: 52svh; width: min(38vw, 62svh); }
-    .s2 .mask { aspect-ratio: 16 / 9; }
-    .shot figcaption { margin-top: 12px; }
+    .monitor { position: absolute; left: 51vw; top: 62svh; width: min(15vw, 24svh); }
+    .spectrum { position: absolute; right: 5vw; bottom: 13svh; width: min(24vw, 380px); height: 15svh; }
+    .hint { position: absolute; right: 5vw; bottom: 7svh; width: min(24vw, 380px); }
+    .panel { position: absolute; }
+    .p1 { right: 5vw; top: 12svh; width: min(48vw, 78svh); }
+    .p1 .screen { aspect-ratio: 2 / 1; }
+    .p2 { left: 7vw; top: 50svh; width: min(38vw, 60svh); }
+    .p2 .screen { aspect-ratio: 16 / 9; }
+    .panel figcaption { margin-top: 12px; }
   }
 </style>

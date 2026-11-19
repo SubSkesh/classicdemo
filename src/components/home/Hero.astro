@@ -5,7 +5,8 @@ interface Props { next?: ClassicEvent }
 const { next } = Astro.props;
 const np = next ? dateParts(next.data.date) : null;
 
-// geometria del monogramma (stessa del logo originale, ricostruita in vettoriale)
+// geometria del monogramma (stessa del logo originale, ricostruita in vettoriale).
+// Il marchio resta bianco pieno come l'originale: la luce e il colore stanno nell'ambiente, non sul logo.
 const L = 'M90 10H0v119h90v-27H27V37h63z';
 const R = 'M135 10h90v119h-90v-27h63V37h-63z';
 const walls = [
@@ -19,56 +20,25 @@ const walls = [
     <div class="haze haze-a" data-haze></div>
     <div class="haze haze-b" data-haze></div>
     <canvas class="smoke" data-smoke></canvas>
-    <div class="beam" data-beam></div>
+    <div class="beam" data-beam><span class="beam-core"></span></div>
     <div class="vignette"></div>
   </div>
 
-  <!-- l'insegna: due C scure con il bordo acceso dalla luce, la barra è la sorgente -->
+  <!-- l'insegna: il monogramma originale, bianco pieno, retroilluminato -->
   <div class="sign" aria-hidden="true" data-sign data-hero-hide>
     <div class="bloom" data-bloom></div>
     <svg class="mono" viewBox="-14 -14 253 167">
-      <defs>
-        <linearGradient id="rim-l" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="90" y2="0">
-          <stop offset="0" stop-color="#F2F0EB" stop-opacity="0.32" />
-          <stop offset="0.55" stop-color="#B44CFF" stop-opacity="0.9" />
-          <stop offset="1" stop-color="#FF2D6F" />
-        </linearGradient>
-        <linearGradient id="rim-r" gradientUnits="userSpaceOnUse" x1="225" y1="0" x2="135" y2="0">
-          <stop offset="0" stop-color="#F2F0EB" stop-opacity="0.32" />
-          <stop offset="0.55" stop-color="#B44CFF" stop-opacity="0.9" />
-          <stop offset="1" stop-color="#FF2D6F" />
-        </linearGradient>
-        <linearGradient id="fill-l" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="90" y2="0">
-          <stop offset="0" stop-color="#070707" />
-          <stop offset="1" stop-color="#17141a" />
-        </linearGradient>
-        <linearGradient id="fill-r" gradientUnits="userSpaceOnUse" x1="225" y1="0" x2="135" y2="0">
-          <stop offset="0" stop-color="#070707" />
-          <stop offset="1" stop-color="#17141a" />
-        </linearGradient>
-        <linearGradient id="bar-grad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stop-color="#FF2D6F" />
-          <stop offset="0.45" stop-color="#F7E9FF" />
-          <stop offset="0.6" stop-color="#E9D9FF" />
-          <stop offset="1" stop-color="#5CE1E6" />
-        </linearGradient>
-      </defs>
       {walls.map((w) => (
         <g class="wall" data-wall={w.side}>
-          <path class="fill" d={w.d} fill={`url(#fill-${w.side})`} />
-          <path class="glow2" d={w.d} stroke={`url(#rim-${w.side})`} data-rim />
-          <path class="glow1" d={w.d} stroke={`url(#rim-${w.side})`} data-rim />
-          <path class="rim" d={w.d} stroke={`url(#rim-${w.side})`} data-rim />
+          <path class="fill" d={w.d} />
+          <path class="rim" d={w.d} data-rim />
         </g>
       ))}
-      <g class="bar" data-bar>
-        <rect x="99" y="0" width="27" height="139" fill="url(#bar-grad)" />
-        <rect class="hot" x="109" y="6" width="7" height="127" fill="#fff" />
-      </g>
+      <rect class="bar" x="99" y="0" width="27" height="139" data-bar />
     </svg>
   </div>
 
-  <h1 id="hero-title" class="title display" aria-label="Classic Club" data-hero-hide>
+  <h1 id="hero-title" class="title display" aria-label="Classic Club" data-hero-hide data-hero-title>
     <span class="w w-l" aria-hidden="true"><span class="w-in" data-word="l">Classic</span></span>
     <span class="w w-r" aria-hidden="true"><span class="w-in" data-word="r">Club</span></span>
   </h1>
@@ -94,57 +64,65 @@ const walls = [
 
 <style>
   .hero {
-    position: relative; height: 100svh; min-height: 620px; overflow: clip; isolation: isolate;
-    display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: 1fr auto auto 1.15fr auto; justify-items: center;
-    padding: 84px var(--gutter) clamp(20px, 4vh, 44px);
+    position: relative; height: 100svh; min-height: 600px; overflow: clip; isolation: isolate;
+    display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: 1fr auto auto 1.1fr auto; justify-items: center;
+    padding: calc(84px + env(safe-area-inset-top)) var(--gutter) calc(clamp(20px, 4vh, 44px) + env(safe-area-inset-bottom));
     --beam-w: clamp(22px, 2.6vw, 44px);
   }
 
   /* ---------- atmosfera ---------- */
   .atmo { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
-  .haze { position: absolute; left: 50%; top: 40%; translate: -50% -50%; border-radius: 50%; will-change: transform; }
+  .haze { position: absolute; left: 50%; top: 38%; translate: -50% -50%; border-radius: 50%; will-change: transform; }
   .haze-a {
     width: 130vmax; height: 110vmax;
-    background: radial-gradient(closest-side, rgb(255 45 111 / 0.30), rgb(180 76 255 / 0.13) 34%, rgb(180 76 255 / 0.04) 55%, transparent 70%);
+    background: radial-gradient(closest-side, rgb(242 240 235 / 0.10), rgb(255 45 111 / 0.16) 22%, rgb(180 76 255 / 0.09) 42%, transparent 68%);
   }
   .haze-b {
-    top: 78%; width: 90vmax; height: 50vmax;
-    background: radial-gradient(closest-side, rgb(92 225 230 / 0.14), transparent 70%);
+    top: 80%; width: 90vmax; height: 50vmax;
+    background: radial-gradient(closest-side, rgb(92 225 230 / 0.10), transparent 70%);
   }
   .smoke { position: absolute; inset: 0; width: 100%; height: 100%; mix-blend-mode: screen; opacity: 0; }
+  /* fascio: nucleo bianco come il logo, frange iridescenti appena accennate */
   .beam {
-    position: absolute; left: 50%; top: 0; bottom: 0; width: var(--beam-w); translate: -50% 0;
-    background: linear-gradient(180deg, transparent 0%, rgb(255 45 111 / 0.55) 18%, rgb(214 170 255 / 0.75) 42%, rgb(180 76 255 / 0.55) 62%, rgb(92 225 230 / 0.45) 84%, transparent 100%);
-    mask: linear-gradient(90deg, transparent, #000 35%, #000 65%, transparent);
-    mix-blend-mode: screen; transform-origin: 50% 40%; will-change: transform, opacity;
+    position: absolute; left: 50%; top: 0; bottom: 0; width: calc(var(--beam-w) * 2.6); translate: -50% 0;
+    background: linear-gradient(180deg, transparent, rgb(255 45 111 / 0.22) 22%, rgb(180 76 255 / 0.2) 50%, rgb(92 225 230 / 0.16) 80%, transparent);
+    mask: linear-gradient(90deg, transparent, #000 40%, #000 60%, transparent);
+    mix-blend-mode: screen; transform-origin: 50% 38%; will-change: transform, opacity;
   }
-  .vignette { position: absolute; inset: 0; background: radial-gradient(110% 85% at 50% 42%, transparent 45%, rgb(0 0 0 / 0.88) 100%); }
+  .beam-core {
+    position: absolute; left: 50%; top: 0; bottom: 0; width: 38%; translate: -50% 0;
+    background: linear-gradient(180deg, transparent, rgb(242 240 235 / 0.5) 20%, rgb(242 240 235 / 0.75) 40%, rgb(242 240 235 / 0.5) 64%, transparent 96%);
+    mask: linear-gradient(90deg, transparent, #000 45%, #000 55%, transparent);
+  }
+  .vignette { position: absolute; inset: 0; background: radial-gradient(110% 85% at 50% 40%, transparent 45%, rgb(0 0 0 / 0.88) 100%); }
 
   /* ---------- insegna ---------- */
-  .sign { grid-row: 2; position: relative; width: min(40vw, 64svh); }
+  .sign { grid-row: 2; position: relative; width: min(42vw, 62svh); }
   .mono { width: 100%; overflow: visible; }
   .mono :global(.wall) { will-change: transform; }
-  .mono :global([data-rim]) { fill: none; stroke-linejoin: miter; }
-  .mono :global(.rim) { stroke-width: 1; }
-  .mono :global(.glow1) { stroke-width: 3.6; opacity: 0.3; }
-  .mono :global(.glow2) { stroke-width: 10; opacity: 0.1; }
-  .mono :global(.hot) { opacity: 0.8; }
+  .mono :global(.fill), .mono :global(.bar) { fill: var(--bone); }
+  .mono :global(.rim) { fill: none; stroke: var(--bone); stroke-width: 1.2; stroke-linejoin: miter; }
+  :global(html.reduced) .mono :global(.rim) { display: none; }
+  /* retroilluminazione bianca: il logo resta pieno, la luce gli sta dietro */
   .bloom {
-    position: absolute; left: 50%; top: 50%; width: 46%; height: 150%; translate: -50% -50%;
-    background: radial-gradient(closest-side, rgb(247 233 255 / 0.5), rgb(255 45 111 / 0.22) 38%, rgb(180 76 255 / 0.1) 62%, transparent 78%);
+    position: absolute; left: 50%; top: 50%; width: 150%; height: 190%; translate: -50% -50%;
+    background:
+      radial-gradient(closest-side, rgb(242 240 235 / 0.28), rgb(242 240 235 / 0.08) 45%, transparent 70%),
+      radial-gradient(closest-side, rgb(255 45 111 / 0.12), transparent 80%);
     mix-blend-mode: screen; pointer-events: none; will-change: transform, opacity;
   }
 
   /* ---------- titolo: CLASSIC | CLUB separati dalla luce ---------- */
   .title {
-    grid-row: 3; width: 100%; margin-top: clamp(14px, 3.2vh, 40px);
-    display: grid; grid-template-columns: minmax(0, 1fr) var(--beam-w) minmax(0, 1fr); align-items: end; min-width: 0;
-    font-size: min(14.4vw, 24svh); line-height: 0.82;
+    grid-row: 3; width: 100%; margin-top: clamp(16px, 3.6vh, 44px); min-width: 0;
+    display: grid; grid-template-columns: minmax(0, 1fr) var(--beam-w) minmax(0, 1fr); align-items: end;
+    font-size: min(12.6vw, 21svh); line-height: 0.82;
   }
   .w { display: block; overflow-x: clip; overflow-y: visible; max-width: 100%; }
   .w-l { grid-column: 1; justify-self: end; }
   .w-r { grid-column: 3; justify-self: start; }
-  .w-in { display: block; padding-inline: 0.02em; will-change: transform; }
+  .w-in { display: block; padding-inline: 0.02em; }
+  .w-in :global(.ch) { will-change: transform, opacity; }
 
   /* ---------- testo in basso ---------- */
   .copy { grid-row: 5; width: 100%; display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 24px; }
@@ -161,17 +139,34 @@ const walls = [
   .scroll i { width: 1px; height: 48px; background: linear-gradient(var(--ash), transparent); animation: drip 2.2s var(--ease-inout) infinite; transform-origin: top; }
   @keyframes drip { 0% { transform: scaleY(0); } 50% { transform: scaleY(1); } 100% { transform: scaleY(1); opacity: 0; } }
 
-  /* la foschia CSS respira da sola anche senza JS (e si ferma con reduced motion) */
   .haze-a { animation: breathe 9s ease-in-out infinite alternate; }
   .haze-b { animation: breathe 13s ease-in-out infinite alternate-reverse; }
   @keyframes breathe { from { transform: scale(1) translateY(0); } to { transform: scale(1.12) translateY(-3%); } }
 
+  /* ---------- smartphone ---------- */
   @media (max-width: 760px) {
-    .hero { grid-template-rows: 1fr auto auto 1fr auto; padding-top: 76px; }
-    .sign { width: min(74vw, 40svh); }
-    .title { grid-template-columns: minmax(0, 1fr); font-size: min(27.5vw, 17svh); justify-items: center; row-gap: 0.04em; }
+    .hero { grid-template-rows: 0.8fr auto auto 1fr auto; padding-top: calc(76px + env(safe-area-inset-top)); }
+    .sign { width: min(78vw, 36svh); }
+    .title { grid-template-columns: minmax(0, 1fr); font-size: min(26vw, 15.5svh); justify-items: center; row-gap: 0.04em; margin-top: clamp(14px, 3vh, 28px); }
     .w-l, .w-r { grid-column: 1; justify-self: center; }
-    .copy { grid-template-columns: 1fr; gap: 18px; }
+    .copy { grid-template-columns: 1fr; gap: 16px; }
+    .sub { font-size: 16px; }
+    .scroll { display: none; }
+  }
+  /* telefoni bassi (es. 360×640): compattare senza togliere la dicitura d'ingresso */
+  @media (max-width: 760px) and (max-height: 700px) {
+    .sign { width: min(64vw, 30svh); }
+    .title { font-size: min(23vw, 14svh); }
+    .sub { font-size: 15px; }
+    .entry { font-size: 12px; }
+  }
+  @media (orientation: landscape) and (max-height: 520px) {
+    .hero { min-height: 0; grid-template-rows: auto auto 1fr auto; padding-top: 60px; padding-bottom: 14px; }
+    .sign { width: min(22vw, 38svh); grid-row: 1; }
+    .title { grid-row: 2; font-size: min(9.5vw, 17svh); margin-top: 10px; grid-template-columns: minmax(0, 1fr) var(--beam-w) minmax(0, 1fr); }
+    .w-l { grid-column: 1; justify-self: end; }
+    .w-r { grid-column: 3; justify-self: start; }
+    .copy { grid-row: 4; }
     .scroll { display: none; }
   }
 </style>

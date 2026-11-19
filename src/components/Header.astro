@@ -20,7 +20,7 @@ const isSerate = path.startsWith('/serate');
   .site-header {
     position: fixed; inset: 0 0 auto; z-index: 40;
     display: flex; align-items: center; justify-content: space-between;
-    padding: 18px var(--gutter);
+    padding: calc(18px + env(safe-area-inset-top)) calc(var(--gutter) + env(safe-area-inset-right)) 18px calc(var(--gutter) + env(safe-area-inset-left));
     mix-blend-mode: difference;
   }
   .brand { display: block; padding: 6px; margin: -6px; }
@@ -34,5 +34,11 @@ const isSerate = path.startsWith('/serate');
   }
   nav a:not(.pill):hover::after, nav a[aria-current='page']::after { transform: scaleX(1); transform-origin: left; }
   .pill { display: inline-block; border: 1px solid currentColor; border-radius: var(--radius-pill); padding: 9px 18px; }
-  @media (max-width: 640px) { .hide-sm { display: none; } }
+  @media (max-width: 640px) {
+    .hide-sm { display: none; }
+    /* aree di tocco da almeno 44px */
+    nav a:not(.pill) { display: inline-flex; align-items: center; min-height: 44px; padding-inline: 4px; }
+    .pill { display: inline-flex; align-items: center; min-height: 44px; padding: 0 18px; }
+    .brand { padding: 10px; margin: -10px; }
+  }
 </style>

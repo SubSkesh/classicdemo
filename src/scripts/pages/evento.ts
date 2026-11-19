@@ -10,7 +10,7 @@ const init: PageInit = (root) => {
   const h1 = root.querySelector<HTMLElement>('[data-split]');
   // arrivando da un'altra pagina il titolo fa già il morph: animarlo di nuovo sarebbe un doppione
   if (h1 && !nav.client) {
-    const s = SplitText.create(h1, { type: 'chars', mask: 'chars' });
+    const s = SplitText.create(h1, { type: 'words,chars', mask: 'chars' });
     gsap.from(s.chars, { yPercent: 105, duration: 1.1, stagger: 0.03, delay: 0.1 });
     gsap.from(root.querySelector('.poster'), { clipPath: 'inset(100% 0 0 0)', duration: 1.4, ease: 'expo.inOut', delay: 0.2 });
     cleanups.push(() => s.revert());

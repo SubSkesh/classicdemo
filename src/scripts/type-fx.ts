@@ -4,7 +4,7 @@
  * - equalizer: le lettere si allargano a onda come un VU-meter, guidate dalla velocità di scroll.
  */
 import { SplitText } from 'gsap/SplitText';
-import { gsap, lenis } from './motion';
+import { gsap } from './motion';
 
 gsap.registerPlugin(SplitText);
 
@@ -22,11 +22,8 @@ export function stretchIn(el: HTMLElement, o: StretchOpts = {}) {
   });
   tl.fromTo(
     split.chars,
-    { yPercent: 70, opacity: 0, fontStretch: `${o.from ?? 125}%`, filter: 'blur(6px)' },
-    {
-      yPercent: 0, opacity: 1, fontStretch: `${REST}%`, filter: 'blur(0px)',
-      duration: 1.3, ease: 'expo.out', stagger: o.stagger ?? 0.035, clearProps: 'filter',
-    },
+    { yPercent: 80, opacity: 0, fontStretch: `${o.from ?? 125}%` },
+    { yPercent: 0, opacity: 1, fontStretch: `${REST}%`, duration: 1.4, ease: 'expo.out', stagger: o.stagger ?? 0.035 },
   );
   return { split, tl, revert: () => { tl.kill(); split.revert(); } };
 }
@@ -36,8 +33,12 @@ export function equalizer(chars: HTMLElement[], amp = 46) {
   let level = 0;
   let phase = 0;
   let resting = true;
+  let lastY = window.scrollY;
   const tick = (_t: number, dt: number) => {
-    const v = lenis ? Math.abs(lenis.velocity) : 0;
+    // velocità misurata sullo scroll reale: funziona con Lenis (rotella) e con il touch nativo
+    const y = window.scrollY;
+    const v = Math.abs(y - lastY) / Math.max(dt, 1) * 16.67;
+    lastY = y;
     const target = Math.min(v / 26, 1);
     level += (target - level) * (target > level ? 0.18 : 0.05);
     if (level < 0.004) {

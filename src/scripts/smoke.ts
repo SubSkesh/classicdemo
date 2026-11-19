@@ -28,7 +28,8 @@ void main(){
   float vert=smoothstep(1.15,0.,abs(p.y+.04));
   vec3 cTop=vec3(1.,.18,.44);vec3 cMid=vec3(.71,.30,1.);vec3 cBot=vec3(.36,.88,.90);
   vec3 col=mix(cBot,cMid,smoothstep(0.,.55,uv.y));col=mix(col,cTop,smoothstep(.5,1.,uv.y));
-  vec3 light=col*(halo*smoke*.95+core*.3)*vert;
+  vec3 tint=mix(vec3(.95,.94,.92),col,smoothstep(.015,.32,abs(dx)));
+  vec3 light=tint*(halo*smoke*.85+core*.28)*vert;
   light+=vec3(.05,.045,.065)*smoke*(1.-smoothstep(0.,.9,abs(dx)));
   vec2 m=(uMouse-.5)*vec2(uRes.x/uRes.y,1.);
   light+=col*.12*smoke*exp(-length(p-m)*3.2);
