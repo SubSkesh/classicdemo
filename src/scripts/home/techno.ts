@@ -1,40 +1,44 @@
 /**
- * LA NOTTE AL CLASSIC — scena "techno":
+ * LA NOTTE AL CLASSIC
+ * - titolo come insegna rotta: si accende e si aggiusta man mano che compaiono le foto;
  * - un monitor in loop alterna tre fotogrammi a tagli secchi, a tempo (128 BPM);
- * - le due foto grandi si compongono a barre, come un equalizzatore;
- * - un analizzatore di spettro batte la cassa e prende energia da scroll, mouse e tocchi.
+ * - La pista si compone a barre e risponde al cursore come un equalizzatore (clic = drop);
+ * - Performance si apre come un occhio di bue e il cono di luce segue il cursore.
  *
- * Desktop: scena fissata e coreografata dallo scroll. Il cursore fa cose diverse a seconda dello stato:
- *   foto composta → le barre rispondono come un EQ e una linea di luce segue il mouse, clic = "drop";
- *   foto in composizione → le barre "glitchano"; monitor → strobo veloce, clic = taglio.
- * Smartphone: stessa sequenza senza pin, tocco = drop / taglio / energia.
+ * Desktop: scena fissata e coreografata dallo scroll; cosa fa il cursore dipende dallo stato della foto.
+ * Smartphone: stessa sequenza senza pin; tocco = drop sulla pista, luce sul performer, taglio sul monitor.
  */
 import { gsap, ScrollTrigger, finePointer } from '../motion';
-import { stretchIn, equalizer } from '../type-fx';
+import { neonTitle } from '../neon';
 
 const BPM = 128;
 const BEAT = 60 / BPM;
 type Cleanups = Array<() => void>;
 type State = 'off' | 'build' | 'on';
 
-type Panel = {
-  el: HTMLElement;
-  screen: HTMLElement;
+type Base = { el: HTMLElement; screen: HTMLElement; flash: HTMLElement; title: HTMLElement; at: number; build: number; state: State };
+type Bars = Base & {
+  fx: 'bars';
   cue: HTMLElement;
-  flash: HTMLElement;
-  title: HTMLElement;
-  line: HTMLElement;
   barEls: HTMLElement[];
   slices: HTMLElement[];
-  eq: number[]; // bersaglio EQ (yPercent) per barra
-  cur: number[]; // valore attuale
-  drop: Array<{ v: number }>; // spinta del "drop", animata da GSAP
-  jit: number[]; // glitch orizzontale (px)
-  at: number; // momento d'ingresso nella coreografia
-  state: State;
+  eq: number[];
+  cur: number[];
+  drop: Array<{ v: number }>;
+  jit: number[];
   dirty: boolean;
-  busyUntil: number; // finché un drop è in corso il ticker non smette di aggiornare
+  busyUntil: number;
 };
+type Spot = Base & {
+  fx: 'spot';
+  spot: HTMLElement;
+  mx: number; my: number; r: number; // valori attuali (px)
+  tx: number; ty: number; tr: number; // bersagli
+  open: number; // raggio "tutto illuminato"
+  dirty: boolean;
+  release?: gsap.core.Tween;
+};
+type Panel = Bars | Spot;
 
 export function techno(root: HTMLElement, mm: gsap.MatchMedia, cleanups: Cleanups) {
   const scene = root.querySelector<HTMLElement>('[data-scene]');
@@ -42,14 +46,9 @@ export function techno(root: HTMLElement, mm: gsap.MatchMedia, cleanups: Cleanup
   const desktop = window.matchMedia('(min-width: 1024px)').matches;
   const N = desktop ? 18 : 10;
 
-  /* ---------- titolo: entra largo e si comprime, poi "suona" con lo scroll ---------- */
-  const title = scene.querySelector<HTMLElement>('[data-eq]')!;
-  let stopEq: (() => void) | undefined;
-  const fx = stretchIn(title, { trigger: title, start: 'top 80%', onDone: () => (stopEq = equalizer(fx.split.chars as HTMLElement[])) });
-  cleanups.push(() => {
-    stopEq?.();
-    fx.revert();
-  });
+  /* ---------- titolo: insegna rotta che si aggiusta con le foto ---------- */
+  const neon = neonTitle(scene.querySelector<HTMLElement>('[data-neon]')!);
+  cleanups.push(() => neon.revert());
 
   /* ---------- monitor ---------- */
   const monitor = scene.querySelector<HTMLElement>('[data-monitor]')!;
@@ -68,29 +67,38 @@ export function techno(root: HTMLElement, mm: gsap.MatchMedia, cleanups: Cleanup
     frames[idx].classList.add('on');
     label.textContent = frames[idx].dataset.label ?? '';
     gsap.fromTo(crtFlash, { opacity: hard ? 0.8 : strobe ? 0.5 : 0.25 }, { opacity: 0, duration: strobe ? 0.08 : 0.2, ease: 'power1.out', overwrite: true });
-    energy = Math.max(energy, hard ? 1 : 0.35);
   };
 
-  /* ---------- spettro ---------- */
-  const spectrum = scene.querySelector<HTMLElement>('[data-spectrum]')!;
-  const sBars = [...spectrum.children] as HTMLElement[];
-  let energy = 0;
-  let pointerEnergy = 0;
-
-  /* ---------- pannelli a barre ---------- */
+  /* ---------- pannelli ---------- */
   const panels: Panel[] = [...scene.querySelectorAll<HTMLElement>('[data-panel]')].map((el) => {
     const screen = el.querySelector<HTMLElement>('[data-screen]')!;
-    const barsBox = screen.querySelector<HTMLElement>('[data-bars]')!;
-    const img = screen.querySelector<HTMLImageElement>('.src img, img.src, img')!;
-    const p: Panel = {
+    const base = {
       el, screen,
-      cue: screen.querySelector<HTMLElement>('[data-cue]')!,
       flash: screen.querySelector<HTMLElement>('[data-flash]')!,
       title: el.querySelector<HTMLElement>('[data-panel-title]')!,
-      line: el.querySelector<HTMLElement>('[data-panel-line]')!,
+      at: 0, build: 1.6, state: 'off' as State,
+    };
+    if (el.dataset.fx === 'spot') {
+      const p: Spot = { ...base, fx: 'spot', spot: screen.querySelector<HTMLElement>('[data-spot]')!, mx: 0, my: 0, r: 0, tx: 0, ty: 0, tr: 0, open: 0, dirty: true };
+      const measure = () => {
+        const w = screen.clientWidth;
+        const h = screen.clientHeight;
+        p.open = Math.hypot(w, h) * 1.3;
+        if (!p.r) { p.mx = p.tx = w / 2; p.my = p.ty = h * 0.45; p.r = p.tr = p.open; }
+        p.dirty = true;
+      };
+      measure();
+      window.addEventListener('resize', measure);
+      cleanups.push(() => window.removeEventListener('resize', measure));
+      return p;
+    }
+    // barre: ogni barra contiene la stessa foto spostata, così insieme ricompongono l'immagine
+    const barsBox = screen.querySelector<HTMLElement>('[data-bars]')!;
+    const img = screen.querySelector<HTMLImageElement>('img')!;
+    const p: Bars = {
+      ...base, fx: 'bars', cue: screen.querySelector<HTMLElement>('[data-cue]')!,
       barEls: [], slices: [], eq: Array(N).fill(0), cur: Array(N).fill(0),
-      drop: Array.from({ length: N }, () => ({ v: 0 })), jit: Array(N).fill(0),
-      at: 0, state: 'off', dirty: false, busyUntil: 0,
+      drop: Array.from({ length: N }, () => ({ v: 0 })), jit: Array(N).fill(0), dirty: false, busyUntil: 0,
     };
     const sliceImgs: HTMLImageElement[] = [];
     const frag = document.createDocumentFragment();
@@ -112,7 +120,6 @@ export function techno(root: HTMLElement, mm: gsap.MatchMedia, cleanups: Cleanup
       sliceImgs.push(im);
     }
     barsBox.appendChild(frag);
-    // le fette usano la stessa immagine già scelta dal browser (AVIF/WebP, taglia giusta)
     const fill = () => sliceImgs.forEach((im) => (im.src = img.currentSrc || img.src));
     if (img.complete && img.naturalWidth) fill();
     else img.addEventListener('load', fill, { once: true });
@@ -124,50 +131,41 @@ export function techno(root: HTMLElement, mm: gsap.MatchMedia, cleanups: Cleanup
     return p;
   });
 
-  /* ---------- un solo ticker per loop, spettro e barre (solo se la scena è visibile) ---------- */
+  /* ---------- un solo ticker (solo con la scena visibile) ---------- */
   let visible = false;
   const io = new IntersectionObserver(([e]) => (visible = e.isIntersecting), { rootMargin: '10% 0px' });
   io.observe(scene);
-  let lastY = window.scrollY;
-  const tick = (time: number, dt: number) => {
+  const tick = (_time: number, dt: number) => {
     if (!visible) return;
-    const sec = dt / 1000;
-    // tempo del loop: due battute normalmente, un sedicesimo in strobo
     if (loopOn) {
-      acc += sec;
-      const period = strobe ? BEAT / 4 : BEAT * 2;
-      if (acc >= period) {
+      acc += dt / 1000;
+      if (acc >= (strobe ? BEAT / 4 : BEAT * 2)) {
         acc = 0;
         cut();
       }
     }
-    // energia: scroll + movimento del mouse + colpi, con decadimento
-    const y = window.scrollY;
-    const sv = (Math.abs(y - lastY) / Math.max(dt, 1)) * 16.67;
-    lastY = y;
-    pointerEnergy *= 0.9;
-    energy = Math.max(energy * 0.95, Math.min(sv / 28, 1), pointerEnergy);
-    const phase = (time % BEAT) / BEAT;
-    const kick = Math.exp(-phase * 7);
-    const n = sBars.length;
-    for (let i = 0; i < n; i++) {
-      const f = i / (n - 1);
-      const base = 0.16 + 0.2 * (0.5 + 0.5 * Math.sin(time * (2.2 + f * 7) + i * 1.3));
-      const lvl = Math.min(1, base + kick * (1 - f) * 0.42 + energy * (0.3 + 0.45 * Math.abs(Math.sin(time * 9 + i * 0.7))));
-      sBars[i].style.transform = `scaleY(${lvl.toFixed(3)})`;
-    }
-    // barre dei pannelli: EQ + drop + glitch
     for (const p of panels) {
       if (!p.dirty) continue;
-      let moving = false;
-      for (let i = 0; i < N; i++) {
-        p.cur[i] += (p.eq[i] - p.cur[i]) * 0.2;
-        p.jit[i] *= 0.78;
-        const yv = p.cur[i] + p.drop[i].v;
-        if (Math.abs(yv) > 0.05 || Math.abs(p.jit[i]) > 0.1) moving = true;
-        p.slices[i].style.transform = `translate3d(${p.jit[i].toFixed(1)}px, ${yv.toFixed(2)}%, 0)`;
+      if (p.fx === 'bars') {
+        let moving = false;
+        for (let i = 0; i < N; i++) {
+          p.cur[i] += (p.eq[i] - p.cur[i]) * 0.2;
+          p.jit[i] *= 0.78;
+          const yv = p.cur[i] + p.drop[i].v;
+          if (Math.abs(yv) > 0.05 || Math.abs(p.jit[i]) > 0.1) moving = true;
+          p.slices[i].style.transform = `translate3d(${p.jit[i].toFixed(1)}px, ${yv.toFixed(2)}%, 0)`;
+        }
+        if (!moving && p.eq.every((v) => v === 0) && performance.now() > p.busyUntil) p.dirty = false;
+      } else {
+        // occhio di bue: posizione e apertura del cono inseguono il bersaglio con un po' di inerzia
+        p.mx += (p.tx - p.mx) * 0.14;
+        p.my += (p.ty - p.my) * 0.14;
+        p.r += (p.tr - p.r) * 0.1;
+        p.spot.style.setProperty('--mx', `${p.mx.toFixed(1)}px`);
+        p.spot.style.setProperty('--my', `${p.my.toFixed(1)}px`);
+        p.spot.style.setProperty('--r', `${p.r.toFixed(1)}px`);
+        if (Math.abs(p.tx - p.mx) < 0.5 && Math.abs(p.ty - p.my) < 0.5 && Math.abs(p.tr - p.r) < 0.5) p.dirty = false;
       }
-      if (!moving && p.eq.every((v) => v === 0) && performance.now() > p.busyUntil) p.dirty = false;
     }
   };
   gsap.ticker.add(tick);
@@ -177,7 +175,7 @@ export function techno(root: HTMLElement, mm: gsap.MatchMedia, cleanups: Cleanup
   });
 
   /* ---------- azioni ---------- */
-  const drop = (p: Panel, px: number) => {
+  const drop = (p: Bars, px: number) => {
     p.dirty = true;
     p.busyUntil = performance.now() + 1700;
     p.drop.forEach((d, i) => {
@@ -187,77 +185,87 @@ export function techno(root: HTMLElement, mm: gsap.MatchMedia, cleanups: Cleanup
         .to(d, { v: 0, duration: 0.95, ease: 'bounce.out' });
     });
     gsap.fromTo(p.flash, { opacity: 0.45 }, { opacity: 0, duration: 0.5, ease: 'power1.out', overwrite: true });
-    energy = 1;
   };
-  const glitch = (p: Panel) => {
+  const focus = (p: Spot, x: number, y: number) => {
+    p.release?.kill();
+    p.tx = x;
+    p.ty = y;
+    p.tr = Math.max(p.screen.clientWidth, p.screen.clientHeight) * 0.3;
     p.dirty = true;
-    const i = Math.floor(Math.random() * N);
-    p.jit[i] = (Math.random() - 0.5) * 24;
-    pointerEnergy = Math.max(pointerEnergy, 0.5);
   };
-
+  const unfocus = (p: Spot) => {
+    p.tr = p.open;
+    p.tx = p.screen.clientWidth / 2;
+    p.ty = p.screen.clientHeight * 0.45;
+    p.dirty = true;
+  };
+  const local = (p: Panel, e: PointerEvent) => {
+    const r = p.screen.getBoundingClientRect();
+    return { x: e.clientX - r.left, y: e.clientY - r.top, px: (e.clientX - r.left) / r.width };
+  };
   const listen = <K extends keyof HTMLElementEventMap>(el: HTMLElement, type: K, fn: (e: HTMLElementEventMap[K]) => void) => {
     el.addEventListener(type, fn as EventListener);
     cleanups.push(() => el.removeEventListener(type, fn as EventListener));
   };
 
   if (finePointer.matches) {
-    /* desktop: il cursore fa cose diverse a seconda dello stato della foto */
-    let lastX = 0;
-    listen(scene, 'pointermove', (e) => {
-      pointerEnergy = Math.max(pointerEnergy, Math.min(Math.abs(e.clientX - lastX) / 40, 0.8));
-      lastX = e.clientX;
-    });
+    /* desktop: il cursore fa cose diverse a seconda della foto e del suo stato */
     panels.forEach((p) => {
-      const cx = gsap.quickTo(p.cue, 'x', { duration: 0.25, ease: 'power3' });
-      listen(p.screen, 'pointermove', (e) => {
-        const r = p.screen.getBoundingClientRect();
-        const px = (e.clientX - r.left) / r.width;
-        if (p.state === 'on') {
-          // EQ: le barre vicine al cursore saltano, come le frequenze sotto un fader
-          for (let i = 0; i < N; i++) {
-            const d = (i + 0.5) / N - px;
-            p.eq[i] = -18 * Math.exp(-(d * d) / (2 * 0.1 * 0.1));
+      if (p.fx === 'bars') {
+        const cx = gsap.quickTo(p.cue, 'x', { duration: 0.25, ease: 'power3' });
+        listen(p.screen, 'pointermove', (e) => {
+          const { x, px } = local(p, e);
+          if (p.state === 'on') {
+            for (let i = 0; i < N; i++) {
+              const d = (i + 0.5) / N - px;
+              p.eq[i] = -18 * Math.exp(-(d * d) / (2 * 0.1 * 0.1));
+            }
+            p.dirty = true;
+            cx(x);
+            gsap.to(p.cue, { opacity: 1, duration: 0.2, overwrite: 'auto' });
+          } else if (p.state === 'build' && Math.random() < 0.35) {
+            p.jit[Math.floor(Math.random() * N)] = (Math.random() - 0.5) * 24;
+            p.dirty = true;
           }
+        });
+        listen(p.screen, 'pointerleave', () => {
+          p.eq.fill(0);
           p.dirty = true;
-          cx(e.clientX - r.left);
-          gsap.to(p.cue, { opacity: 1, duration: 0.2, overwrite: 'auto' });
-        } else if (p.state === 'build') {
-          if (Math.random() < 0.35) glitch(p);
-        }
-      });
-      listen(p.screen, 'pointerleave', () => {
-        p.eq.fill(0);
-        p.dirty = true;
-        gsap.to(p.cue, { opacity: 0, duration: 0.3, overwrite: 'auto' });
-      });
-      listen(p.screen, 'pointerdown', (e) => {
-        if (p.state !== 'on') return;
-        const r = p.screen.getBoundingClientRect();
-        drop(p, (e.clientX - r.left) / r.width);
-      });
+          gsap.to(p.cue, { opacity: 0, duration: 0.3, overwrite: 'auto' });
+        });
+        listen(p.screen, 'pointerdown', (e) => p.state === 'on' && drop(p, local(p, e).px));
+      } else {
+        listen(p.screen, 'pointermove', (e) => {
+          if (p.state !== 'on') return;
+          const { x, y } = local(p, e);
+          focus(p, x, y);
+        });
+        listen(p.screen, 'pointerleave', () => unfocus(p));
+      }
     });
     listen(crt, 'pointerenter', () => {
       strobe = true;
-      gsap.to(monitor, { scale: 1.05, duration: 0.5, ease: 'expo.out' });
+      gsap.to(monitor, { scale: 1.04, duration: 0.5, ease: 'expo.out' });
     });
     listen(crt, 'pointerleave', () => {
       strobe = false;
       gsap.to(monitor, { scale: 1, duration: 0.6, ease: 'expo.out' });
     });
     listen(crt, 'pointerdown', () => loopOn && cut(true));
-    listen(spectrum, 'pointermove', () => (pointerEnergy = 1));
   } else {
-    /* smartphone: il tocco fa il drop sulle foto, taglia il monitor, carica lo spettro */
+    /* smartphone: tocco = drop sulla pista, luce sul performer (poi torna a illuminare tutto), taglio sul monitor */
     panels.forEach((p) =>
       listen(p.screen, 'pointerdown', (e) => {
         if (p.state !== 'on') return;
-        const r = p.screen.getBoundingClientRect();
-        drop(p, (e.clientX - r.left) / r.width);
+        if (p.fx === 'bars') drop(p, local(p, e).px);
+        else {
+          const { x, y } = local(p, e);
+          focus(p, x, y);
+          p.release = gsap.delayedCall(1.8, () => unfocus(p));
+        }
       }),
     );
     listen(crt, 'pointerdown', () => loopOn && cut(true));
-    listen(spectrum, 'pointerdown', () => (energy = 1));
   }
 
   /* ---------- coreografie ---------- */
@@ -266,16 +274,19 @@ export function techno(root: HTMLElement, mm: gsap.MatchMedia, cleanups: Cleanup
       .fromTo(crt, { scaleX: 0.02, scaleY: 0.006, opacity: 0 }, { scaleX: 1, opacity: 1, duration: 0.35, ease: 'power2.out' }, at)
       .to(crt, { scaleY: 1, duration: 0.5, ease: 'expo.out' }, at + 0.3)
       .fromTo(crtFlash, { opacity: 0.9 }, { opacity: 0, duration: 0.6, ease: 'power1.out' }, at + 0.35)
-      .fromTo(cap, { opacity: 0 }, { opacity: 1, duration: 0.4 }, at + 0.55)
-      .fromTo(spectrum, { opacity: 0, scaleY: 0, transformOrigin: '50% 100%' }, { opacity: 1, scaleY: 1, duration: 0.8, ease: 'expo.out' }, at + 0.45);
+      .fromTo(cap, { opacity: 0 }, { opacity: 1, duration: 0.4 }, at + 0.55);
 
   const reveal = (tl: gsap.core.Timeline, p: Panel, at: number) => {
     p.at = at;
-    tl.fromTo(p.barEls, { yPercent: 101 }, { yPercent: 0, duration: 1.1, ease: 'power4.out', stagger: { each: 0.045, from: 'center' } }, at)
-      .fromTo(p.title, { opacity: 0, x: -24, fontStretch: '125%' }, { opacity: 1, x: 0, fontStretch: '62%', duration: 1, ease: 'expo.out' }, at + 0.4)
-      .fromTo(p.line, { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.8, ease: 'expo.out' }, at + 0.55);
+    p.build = p.fx === 'bars' ? 1.6 : 1.45;
+    if (p.fx === 'bars') {
+      tl.fromTo(p.barEls, { yPercent: 101 }, { yPercent: 0, duration: 1.1, ease: 'power4.out', stagger: { each: 0.045, from: 'center' } }, at);
+    } else {
+      // il palco si accende: un cerchio di luce che si apre dal centro
+      tl.fromTo(p.screen, { clipPath: 'circle(0% at 50% 45%)' }, { clipPath: 'circle(75% at 50% 45%)', duration: 1.4, ease: 'power3.inOut' }, at);
+    }
+    tl.fromTo(p.title, { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.9, ease: 'expo.out' }, at + 0.45);
   };
-  const BUILD = 1.1 + 0.045 * (N / 2) + 0.1; // durata della composizione di un pannello
 
   mm.add(
     {
@@ -284,23 +295,29 @@ export function techno(root: HTMLElement, mm: gsap.MatchMedia, cleanups: Cleanup
     },
     (ctx) => {
       if (ctx.conditions?.desk) {
-        // prima il monitor si accende e parte il loop, poi si compongono le due foto
+        // il monitor si accende e parte il loop, poi si compongono le due foto; l'insegna si aggiusta con loro
         const tl = gsap.timeline({
           scrollTrigger: {
             trigger: scene, start: 'top top', end: '+=200%', pin: true, scrub: 1, invalidateOnRefresh: true,
             onUpdate: () => {
               const t = tl.time();
               loopOn = t > 0.6;
-              panels.forEach((p) => (p.state = t < p.at ? 'off' : t < p.at + BUILD ? 'build' : 'on'));
+              panels.forEach((p) => (p.state = t < p.at ? 'off' : t < p.at + p.build ? 'build' : 'on'));
+              const last = panels[panels.length - 1];
+              neon.setProgress(Math.min(1, t / (last.at + last.build)));
             },
           },
         });
         powerOn(tl, 0);
         reveal(tl, panels[0], 1.1);
         reveal(tl, panels[1], 2.0);
-        tl.to({}, { duration: 0.6 });
+        // pausa a scena completa: le foto restano interattive prima che la pagina riparta
+        tl.to({}, { duration: 1.2 });
       } else {
-        // smartphone: niente pin; il monitor si accende in vista, le foto si compongono dopo, quando arrivano
+        // smartphone: niente pin; il monitor si accende in vista, le foto si compongono quando arrivano
+        const prog = { v: 0 };
+        const advance = (to: number) =>
+          gsap.to(prog, { v: to, duration: 1.2, ease: 'power1.inOut', overwrite: true, onUpdate: () => neon.setProgress(prog.v) });
         const intro = gsap.timeline({ paused: true });
         powerOn(intro, 0);
         let introDone = false;
@@ -308,11 +325,21 @@ export function techno(root: HTMLElement, mm: gsap.MatchMedia, cleanups: Cleanup
         intro.call(() => {
           loopOn = true;
           introDone = true;
+          advance(0.35);
           waiting.splice(0).forEach((f) => f());
         }, [], 0.7);
         ScrollTrigger.create({ trigger: monitor, start: 'top 82%', once: true, onEnter: () => void intro.play() });
+        let done = 0;
         panels.forEach((p) => {
-          const ptl = gsap.timeline({ paused: true, onStart: () => (p.state = 'build'), onComplete: () => (p.state = 'on') });
+          const ptl = gsap.timeline({
+            paused: true,
+            onStart: () => (p.state = 'build'),
+            onComplete: () => {
+              p.state = 'on';
+              done++;
+              advance(done === panels.length ? 1 : 0.7);
+            },
+          });
           reveal(ptl, p, 0);
           ScrollTrigger.create({
             trigger: p.el, start: 'top 85%', once: true,

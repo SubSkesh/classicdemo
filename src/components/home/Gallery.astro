@@ -1,24 +1,21 @@
 ---
 import Picture from '../Picture.astro';
 
-// "monitor" in loop: tre fotogrammi del Classic che si alternano a tagli secchi, a tempo
+// monitor in loop: tre fotogrammi del Classic che si alternano a tagli secchi, a tempo
 const loops = [
   { name: 'loop-pool', alt: 'La piscina illuminata di notte, con le persone intorno', label: 'Piscina e giardino' },
   { name: 'loop-sala', alt: 'Una sala del Classic piena, sotto le luci rosse', label: 'La sala' },
   { name: 'loop-palco', alt: 'Performer sospeso tra le luci blu del palco', label: 'Sul palco' },
 ];
-// pannelli: le foto grandi si compongono a barre, come un equalizzatore
+// La pista si compone a barre (equalizzatore); Performance si apre come un occhio di bue
 const panels = [
-  { name: 'photo-crowd', alt: 'La pista del Classic piena, luci calde e mani alzate verso la consolle', title: 'La pista', line: 'Due piste, un solo ritmo.', cls: 'p1', sizes: '(min-width: 1024px) 48vw, 150vw' },
-  { name: 'photo-aerial', alt: 'Performer al cerchio aereo sospesa nel fumo viola', title: 'Performance', line: 'Artisti, voci e performer dal vivo.', cls: 'p2', sizes: '(min-width: 1024px) 40vw, 130vw' },
+  { name: 'photo-crowd', alt: 'La pista del Classic piena, luci calde e mani alzate verso la consolle', title: 'La pista', cls: 'p1', fx: 'bars', sizes: '(min-width: 1024px) 48vw, 150vw' },
+  { name: 'photo-aerial', alt: 'Performer al cerchio aereo sospesa nel fumo viola', title: 'Performance', cls: 'p2', fx: 'spot', sizes: '(min-width: 1024px) 40vw, 130vw' },
 ];
-// analizzatore di spettro: altezze di partenza deterministiche (servono anche senza JS / reduced motion)
-const SPECTRUM = 28;
-const levels = Array.from({ length: SPECTRUM }, (_, i) => 0.25 + 0.6 * Math.abs(Math.sin(i * 1.7) * Math.cos(i * 0.43)));
 ---
 <section class="gallery" aria-labelledby="gallery-title" data-gallery>
   <div class="scene" data-scene>
-    <h2 id="gallery-title" class="g-title display" data-eq>La notte<br />al Classic</h2>
+    <h2 id="gallery-title" class="g-title display" data-neon>La notte<br />al Classic</h2>
 
     <figure class="monitor" data-monitor>
       <div class="crt" data-crt>
@@ -31,32 +28,23 @@ const levels = Array.from({ length: SPECTRUM }, (_, i) => 0.25 + 0.6 * Math.abs(
         <span class="flash" aria-hidden="true" data-flash></span>
       </div>
       <figcaption>
-        <span class="rec" aria-hidden="true"></span>
         <span class="lbl" aria-hidden="true" data-frame-label>{loops[0].label}</span>
         <span class="sr-only">Loop di tre immagini: {loops.map((l) => l.label).join(', ')}.</span>
       </figcaption>
     </figure>
 
-    <div class="spectrum" aria-hidden="true" data-spectrum>
-      {levels.map((l) => <i style={`--l:${l.toFixed(3)}`}></i>)}
-    </div>
-    <p class="hint" aria-hidden="true">
-      <span class="h-mouse">Passa con il mouse sulle foto. Clic per il drop, sul monitor per lo strobo.</span>
-      <span class="h-touch">Tocca le foto per il drop, il monitor per cambiare scena.</span>
-    </p>
-
     {panels.map((p) => (
-      <figure class={`panel ${p.cls}`} data-panel>
+      <figure class={`panel ${p.cls}`} data-panel data-fx={p.fx}>
         <div class="screen" data-screen>
           <Picture name={p.name} alt={p.alt} sizes={p.sizes} class="src" />
-          <div class="bars" aria-hidden="true" data-bars></div>
-          <span class="cue" aria-hidden="true" data-cue></span>
+          {p.fx === 'bars' && <div class="bars" aria-hidden="true" data-bars></div>}
+          {p.fx === 'bars' && <span class="cue" aria-hidden="true" data-cue></span>}
+          {p.fx === 'spot' && (
+            <div class="spot" aria-hidden="true" data-spot><Picture name={p.name} alt="" sizes={p.sizes} /></div>
+          )}
           <span class="flash" aria-hidden="true" data-flash></span>
         </div>
-        <figcaption>
-          <b class="display" data-panel-title>{p.title}</b>
-          <span data-panel-line>{p.line}</span>
-        </figcaption>
+        <figcaption><b class="display" data-panel-title>{p.title}</b></figcaption>
       </figure>
     ))}
   </div>
@@ -64,14 +52,29 @@ const levels = Array.from({ length: SPECTRUM }, (_, i) => 0.25 + 0.6 * Math.abs(
 
 <style>
   .gallery { position: relative; }
-  .scene { position: relative; padding: var(--section) var(--gutter); display: grid; gap: 28px; }
-  .g-title { font-size: clamp(64px, 9vw, 150px); position: relative; z-index: 3; }
+  .scene { position: relative; padding: var(--section) var(--gutter); display: grid; gap: 32px; }
+
+  /* ---------- titolo come insegna: lettere spente, una luce passa, alcune sono crepate ---------- */
+  .g-title { font-size: clamp(64px, 9vw, 150px); position: relative; z-index: 3; color: var(--bone); }
+  /* --lit = lettera accesa (colore), --glow = la luce che ci passa sopra (solo di passaggio) */
+  .g-title :global(.nch) {
+    --lit: 0; --glow: 0;
+    position: relative;
+    color: color-mix(in srgb, var(--bone) calc(var(--lit) * 100%), #6e6c67);
+    text-shadow:
+      0 0 calc(var(--glow) * 0.14em) rgb(242 240 235 / calc(var(--glow) * 0.5)),
+      0 0 calc(var(--glow) * 0.4em) rgb(255 45 111 / calc(var(--glow) * 0.14));
+  }
+  .g-title :global(.crk .g) { color: transparent; text-shadow: none; }
+  .g-title :global(.crk .h) { position: absolute; left: 0; top: 0; color: inherit; text-shadow: inherit; will-change: transform; }
+  .g-title :global(.crk .a) { clip-path: polygon(0 0, 100% 0, 100% 43%, 0 59%); }
+  .g-title :global(.crk .b) { clip-path: polygon(0 59%, 100% 43%, 100% 100%, 0 100%); }
 
   /* ---------- monitor in loop ---------- */
-  .monitor { margin: 0; width: min(62vw, 300px); position: relative; z-index: 3; }
+  .monitor { margin: 0; width: min(70vw, 320px); position: relative; z-index: 3; }
   .crt {
     position: relative; aspect-ratio: 1; overflow: hidden; border-radius: 10px; background: #000;
-    box-shadow: 0 0 0 1px rgb(242 240 235 / 0.16), 0 0 60px rgb(255 45 111 / 0.18);
+    box-shadow: 0 0 0 1px rgb(242 240 235 / 0.16), 0 0 60px rgb(255 45 111 / 0.14);
     transform-origin: 50% 50%;
   }
   .frame { position: absolute; inset: 0; opacity: 0; }
@@ -80,7 +83,7 @@ const levels = Array.from({ length: SPECTRUM }, (_, i) => 0.25 + 0.6 * Math.abs(
   .frame :global(img) { filter: grayscale(1) contrast(1.35) brightness(0.95); }
   .crt::after {
     content: ''; position: absolute; inset: 0; pointer-events: none;
-    background: linear-gradient(160deg, var(--accent), #3b0f5c 60%, #b44cff); mix-blend-mode: color; opacity: 0.75;
+    background: linear-gradient(160deg, var(--accent), #3b0f5c 60%, #b44cff); mix-blend-mode: color; opacity: 0.7;
   }
   .scan {
     position: absolute; inset: 0; z-index: 2; pointer-events: none;
@@ -90,32 +93,17 @@ const levels = Array.from({ length: SPECTRUM }, (_, i) => 0.25 + 0.6 * Math.abs(
   }
   @keyframes roll { to { background-position: 0 60px, 0 0; } }
   .flash { position: absolute; inset: 0; z-index: 3; background: var(--bone); opacity: 0; pointer-events: none; mix-blend-mode: screen; }
-  .monitor figcaption { display: flex; align-items: center; gap: 10px; margin-top: 12px; font-size: 14px; }
-  .rec { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); animation: blink 0.94s steps(1) infinite; }
-  @keyframes blink { 50% { opacity: 0.2; } }
+  .monitor figcaption { margin-top: 12px; }
   .lbl { font-family: var(--display); font-stretch: 75%; font-weight: 700; text-transform: uppercase; font-size: 18px; letter-spacing: 0.02em; }
 
-  /* ---------- spettro ---------- */
-  .spectrum { display: flex; align-items: flex-end; gap: 3px; height: 72px; position: relative; z-index: 3; }
-  .spectrum i {
-    flex: 1; height: 100%; transform-origin: 50% 100%; transform: scaleY(var(--l));
-    background: linear-gradient(to top, var(--bone) 0 62%, var(--accent) 62% 100%);
-    mask: repeating-linear-gradient(to top, #000 0 4px, transparent 4px 6px);
-    opacity: 0.85; will-change: transform;
-  }
-
-  .hint { font-size: 13px; color: var(--ash); position: relative; z-index: 3; }
-  .hint .h-mouse { display: none; }
-  @media (hover: hover) and (pointer: fine) {
-    .hint .h-mouse { display: inline; }
-    .hint .h-touch { display: none; }
-  }
-  :global(html.reduced) .hint { display: none; }
-
-  /* ---------- pannelli a barre ---------- */
+  /* ---------- pannelli ---------- */
   .panel { margin: 0; position: relative; z-index: 2; }
   .screen { position: relative; overflow: hidden; border-radius: 3px; aspect-ratio: 3 / 2; touch-action: manipulation; }
   .screen :global(.src), .screen :global(.src img) { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .panel figcaption { margin-top: 14px; }
+  .panel b { font-size: clamp(34px, 3.6vw, 60px); font-stretch: 62%; line-height: 0.9; }
+
+  /* La pista: barre */
   .screen:global(.bars-on) :global(.src) { opacity: 0; }
   .bars { position: absolute; inset: 0; display: flex; }
   .bars :global(.bar) { position: relative; flex: 1 1 0; height: 100%; overflow: hidden; will-change: transform; }
@@ -126,30 +114,29 @@ const levels = Array.from({ length: SPECTRUM }, (_, i) => 0.25 + 0.6 * Math.abs(
     position: absolute; top: 0; bottom: 0; left: 0; width: 2px; margin-left: -1px; z-index: 2; pointer-events: none; opacity: 0;
     background: var(--bone); box-shadow: 0 0 12px 2px rgb(242 240 235 / 0.6), 0 0 40px 6px rgb(255 45 111 / 0.35);
   }
-  .panel figcaption { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin-top: 14px; }
-  .panel b { font-size: clamp(34px, 3.6vw, 60px); font-stretch: 62%; line-height: 0.9; }
-  .panel figcaption span { color: var(--ash); }
 
-  /* ---------- smartphone e tablet: monitor e spettro affiancati, pannelli a tutta larghezza ---------- */
+  /* Performance: palco al buio sotto, il cono di luce (copia a colori) sopra */
+  .p2 .screen :global(.src img) { filter: grayscale(0.85) brightness(0.3) contrast(1.15); }
+  .spot {
+    position: absolute; inset: 0; --mx: 50%; --my: 45%; --r: 200vmax;
+    mask: radial-gradient(circle at var(--mx) var(--my), #000 calc(var(--r) * 0.45), transparent var(--r));
+  }
+  .spot :global(picture), .spot :global(img) { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  /* ---------- smartphone e tablet ---------- */
   @media (max-width: 1023px) {
-    .scene { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 20px; row-gap: 32px; }
-    .g-title, .panel, .hint { grid-column: 1 / -1; }
-    .hint { margin-top: -12px; }
-    .monitor { width: 100%; }
-    .spectrum { height: auto; min-height: 120px; align-self: stretch; margin-bottom: 32px; }
+    .monitor { justify-self: end; }
   }
 
   /* ---------- desktop: una sola scena composta, che GSAP fissa e coreografa ---------- */
   @media (min-width: 1024px) {
     .scene { display: block; height: 100svh; min-height: 680px; padding: 0; }
     .g-title { position: absolute; left: var(--gutter); top: 12svh; font-size: min(9vw, 15svh); }
-    .monitor { position: absolute; left: 51vw; top: 62svh; width: min(15vw, 24svh); }
-    .spectrum { position: absolute; right: 5vw; bottom: 13svh; width: min(24vw, 380px); height: 15svh; }
-    .hint { position: absolute; right: 5vw; bottom: 7svh; width: min(24vw, 380px); }
+    .monitor { position: absolute; right: 7vw; top: 61svh; width: min(16vw, 26svh); }
     .panel { position: absolute; }
     .p1 { right: 5vw; top: 12svh; width: min(48vw, 78svh); }
     .p1 .screen { aspect-ratio: 2 / 1; }
-    .p2 { left: 7vw; top: 50svh; width: min(38vw, 60svh); }
+    .p2 { left: 7vw; top: 50svh; width: min(36vw, 58svh); }
     .p2 .screen { aspect-ratio: 16 / 9; }
     .panel figcaption { margin-top: 12px; }
   }

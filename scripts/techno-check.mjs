@@ -37,6 +37,17 @@ const ok = (name, cond, extra = '') => console.log(`${cond ? 'OK  ' : 'FAIL'} ${
   await page.mouse.up();
   await page.waitForTimeout(180);
   await page.screenshot({ path: `${out}/techno-drop-desktop.png` });
+  // Performance: il cono di luce segue il cursore e si stringe
+  await page.mouse.move(700, 120);
+  await page.mouse.wheel(0, 260);
+  await page.waitForTimeout(1500);
+  const p2 = page.locator('[data-panel]').nth(1).locator('[data-screen]');
+  const b2 = await p2.boundingBox();
+  await page.mouse.move(b2.x + b2.width * 0.7, b2.y + b2.height * 0.4, { steps: 8 });
+  await page.waitForTimeout(900);
+  const spot = await page.locator('[data-spot]').evaluate((e) => ({ r: parseFloat(e.style.getPropertyValue('--r')), x: parseFloat(e.style.getPropertyValue('--mx')), w: e.clientWidth }));
+  ok('Performance: occhio di bue che segue il cursore', spot.r > 0 && spot.r < spot.w * 0.6 && spot.x > spot.w * 0.55, `r=${Math.round(spot.r)} x=${Math.round(spot.x)} w=${spot.w}`);
+  await page.screenshot({ path: `${out}/techno-spot-desktop.png` });
   // monitor: hover = strobo
   const crt = await page.locator('[data-crt]').boundingBox();
   await page.mouse.move(crt.x + crt.width / 2, crt.y + crt.height / 2, { steps: 5 });
